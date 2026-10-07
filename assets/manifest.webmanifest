@@ -1,0 +1,23 @@
+{
+  "name": "Jogo de Pular — Preserve & Ascend",
+  "short_name": "Jogo de Pular",
+  "description": "Jogo arcade neon com Modo Clássico preservado da V2.2 e Modo Ascensão com controle manual WASD.",
+  "start_url": "../",
+  "scope": "../",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#090613",
+  "theme_color": "#130d2b",
+  "icons": [
+    {
+      "src": "./images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

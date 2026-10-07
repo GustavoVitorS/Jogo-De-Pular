@@ -1,20 +1,334 @@
 <!DOCTYPE html>
-<html lang="Pt-br" onclick="pular()">
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Jogo de Pular V3.4 — Ascensão com rota lateral obrigatória, sem atalhos verticais e progressão esquerda ↔ direita."
+    />
+    <meta name="theme-color" content="#130d2b" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>Jogo de Pular V3.4 — Zigzag Ascension</title>
+    <link rel="manifest" href="assets/manifest.webmanifest" />
+    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
+    <link rel="stylesheet" href="assets/css/style.css?v=3.4" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="site-header" aria-label="Identidade do jogo">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"><span></span></span>
+          <div>
+            <p id="brandEyebrow" class="eyebrow">Arcade • V3.4</p>
+            <h1>Jogo de <span>Pular</span></h1>
+          </div>
+        </div>
+        <p id="tagline" class="tagline">O mesmo ritmo da V2.2, agora com dois desafios.</p>
+      </header>
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <title>Jogo de Pular</title>
-</head>
 
-<body>
-  <div id="game">
-    <div id="personagem"></div>
-    <div id="quadrado"></div>
-  </div>
-</body>
-<script src="script.js"></script>
+      <section id="modeMenu" class="mode-menu" aria-labelledby="modeMenuTitle">
+        <div class="mode-menu__intro">
+          <p class="overlay-kicker">DOIS MODOS • UMA MESMA IDENTIDADE</p>
+          <h2 id="modeMenuTitle">Escolha seu <span>modo de jogo</span></h2>
+          <p>Cada modo oferece um desafio diferente sem perder a essência da V2.2.</p>
+        </div>
 
+        <div class="mode-grid">
+          <article class="mode-card mode-card--classic">
+            <div class="mode-preview mode-preview--classic" aria-hidden="true">
+              <span class="preview-star preview-star--1"></span>
+              <span class="preview-star preview-star--2"></span>
+              <span class="preview-moon"></span>
+              <span class="preview-hill preview-hill--back"></span>
+              <span class="preview-hill preview-hill--front"></span>
+              <span class="preview-ground"></span>
+              <span class="preview-character preview-character--runner"><i></i><b></b><em></em></span>
+              <span class="preview-jump-arc"></span>
+              <span class="preview-crystal preview-crystal--1"></span>
+              <span class="preview-crystal preview-crystal--2"></span>
+              <span class="preview-obstacle"></span>
+            </div>
+            <div class="mode-card__body">
+              <span class="mode-badge">MODO 1</span>
+              <h3>Modo <span>Clássico</span></h3>
+              <p>Corra, salte e desvie dos obstáculos para marcar o máximo de pontos.</p>
+              <div class="mode-features" aria-label="Características do modo clássico">
+                <span>✦ corrida infinita</span><span>⌁ salto curto / alto</span>
+              </div>
+              <button id="playClassicButton" class="mode-play-button" type="button">
+                JOGAR MODO 1 <span aria-hidden="true">›</span>
+              </button>
+            </div>
+          </article>
+
+          <article class="mode-card mode-card--ascension">
+            <div class="mode-preview mode-preview--ascension" aria-hidden="true">
+              <span class="preview-wall preview-wall--left"></span>
+              <span class="preview-wall preview-wall--right"></span>
+              <span class="preview-platform preview-platform--l1"></span>
+              <span class="preview-platform preview-platform--r1"></span>
+              <span class="preview-platform preview-platform--l2"></span>
+              <span class="preview-character preview-character--climber"><i></i><b></b><em></em></span>
+              <span class="preview-coin preview-coin--1"></span>
+              <span class="preview-coin preview-coin--2"></span>
+              <span class="preview-fall preview-fall--1"></span>
+              <span class="preview-fall preview-fall--2"></span>
+              <span class="preview-checkpoint"><i></i></span>
+            </div>
+            <div class="mode-card__body">
+              <span class="mode-badge">MODO 2</span>
+              <h3>Modo <span>Ascensão</span></h3>
+              <p>Suba entre plataformas, desvie dos blocos e alcance o checkpoint.</p>
+              <div class="mode-features" aria-label="Características do modo ascensão">
+                <span>◆ checkpoints</span><span>↓ perigos do céu</span>
+              </div>
+              <button id="playAscensionButton" class="mode-play-button mode-play-button--accent" type="button">
+                JOGAR MODO 2 <span aria-hidden="true">›</span>
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section
+        id="gameFrame"
+        class="game-frame is-app-hidden"
+        aria-label="Área do Jogo de Pular"
+      >
+        <canvas
+          id="gameCanvas"
+          width="1200"
+          height="600"
+          role="img"
+          aria-label="Jogo de corrida automática. Use Espaço no computador ou o botão Pular no celular."
+        ></canvas>
+
+        <div id="hud" class="hud" aria-live="off">
+          <div class="hud-stats">
+            <div class="stat-card stat-card--score">
+              <span>Pontos</span>
+              <strong id="scoreValue">00000</strong>
+            </div>
+            <div class="stat-card">
+              <span>Recorde</span>
+              <strong id="bestValue">00000</strong>
+            </div>
+            <div class="stat-card stat-card--level">
+              <span id="levelLabel">Nível</span>
+              <strong id="levelValue">1</strong>
+            </div>
+          </div>
+
+          <div class="hud-actions">
+            <button
+              id="menuButton"
+              class="icon-button"
+              type="button"
+              aria-label="Voltar ao menu de modos"
+              title="Modos"
+            >
+              <span aria-hidden="true">⌂</span>
+            </button>
+            <button
+              id="pauseButton"
+              class="icon-button"
+              type="button"
+              aria-label="Pausar jogo"
+              title="Pausar"
+            >
+              <span aria-hidden="true">Ⅱ</span>
+            </button>
+            <button
+              id="soundButton"
+              class="icon-button"
+              type="button"
+              aria-label="Desativar som"
+              title="Som"
+            >
+              <span id="soundIcon" aria-hidden="true">♪</span>
+            </button>
+          </div>
+
+          <div id="powerIndicator" class="power-indicator" hidden>
+            <span id="powerIcon" class="power-icon" aria-hidden="true">S</span>
+            <span>
+              <small id="powerLabel">Escudo</small>
+              <strong id="powerTime">8.0s</strong>
+            </span>
+            <span class="power-track" aria-hidden="true">
+              <span id="powerProgress"></span>
+            </span>
+          </div>
+        </div>
+
+        <div id="startOverlay" class="overlay is-visible" aria-hidden="false">
+          <div class="overlay-card overlay-card--start">
+            <div class="hero-symbol" aria-hidden="true">
+              <span class="hero-symbol__core"></span>
+              <span class="hero-symbol__orbit"></span>
+            </div>
+            <p id="startKicker" class="overlay-kicker">A corrida começa agora</p>
+            <h2 id="startTitle">Até onde você<br /><span>consegue chegar?</span></h2>
+            <p id="startCopy" class="overlay-copy">
+              Desvie dos cristais, colete energia e mantenha o ritmo.
+            </p>
+            <div class="space-prompt desktop-prompt">
+              <kbd>ESPAÇO</kbd>
+              <span>para começar</span>
+            </div>
+            <div class="touch-prompt mobile-prompt" aria-hidden="true">
+              <span class="touch-prompt__dot"></span>
+              <span id="touchStartHint">Toque em <strong>PULAR</strong> para começar</span>
+            </div>
+            <p class="start-record">
+              <span id="startBestLabel">Melhor corrida</span> <strong id="startBestValue">00000</strong>
+            </p>
+            <button id="startMenuButton" class="text-button" type="button">Voltar aos modos</button>
+          </div>
+        </div>
+
+        <div id="pauseOverlay" class="overlay" aria-hidden="true">
+          <div class="overlay-card overlay-card--compact">
+            <p class="overlay-kicker">Respire um pouco</p>
+            <h2 id="pauseTitle">Jogo pausado</h2>
+            <p id="pauseMessage" class="overlay-copy">
+              Seu progresso está seguro.
+            </p>
+            <div class="overlay-actions">
+              <button id="resumeButton" class="primary-button" type="button">Continuar</button>
+              <button id="pauseMenuButton" class="secondary-button" type="button">Voltar ao menu</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="gameOverOverlay" class="overlay" aria-hidden="true">
+          <div class="overlay-card overlay-card--gameover">
+            <p id="gameOverKicker" class="overlay-kicker">Fim da corrida</p>
+            <h2 id="gameOverTitle">Você foi longe.</h2>
+            <div class="result-grid">
+              <div>
+                <span>Pontuação</span>
+                <strong id="finalScoreValue">00000</strong>
+              </div>
+              <div>
+                <span id="finalMiddleLabel">Moedas</span>
+                <strong id="finalCoinsValue">0</strong>
+              </div>
+              <div>
+                <span>Recorde</span>
+                <strong id="finalBestValue">00000</strong>
+              </div>
+            </div>
+            <p id="gameOverDetails" class="result-details" hidden></p>
+            <div class="space-prompt space-prompt--small desktop-prompt">
+              <kbd>ESPAÇO</kbd>
+              <span>para tentar novamente</span>
+            </div>
+            <div class="touch-prompt mobile-prompt" aria-hidden="true">
+              <span class="touch-prompt__dot"></span>
+              <span id="touchRetryHint">Toque em <strong>PULAR</strong> para tentar novamente</span>
+            </div>
+            <button id="gameOverMenuButton" class="text-button" type="button">Voltar aos modos</button>
+          </div>
+        </div>
+
+        <div id="checkpointOverlay" class="checkpoint-overlay" aria-hidden="true">
+          <span class="checkpoint-overlay__ring" aria-hidden="true"></span>
+          <p>CHECKPOINT ALCANÇADO</p>
+          <strong id="checkpointTitle">FASE 1 CONCLUÍDA</strong>
+          <small id="checkpointBonus">+500 pontos</small>
+        </div>
+
+        <div id="newRecordBanner" class="record-banner" aria-live="polite">
+          <span aria-hidden="true">✦</span> Novo recorde!
+        </div>
+
+        <p id="gameStatus" class="sr-only" aria-live="polite">
+          Jogo pronto. Pressione Espaço ou use o controle de salto para começar.
+        </p>
+      </section>
+
+      <aside id="touchControls" class="touch-controls is-app-hidden" aria-label="Controles do jogo no celular">
+        <div id="movementPad" class="movement-pad" aria-label="Movimento no Modo Ascensão">
+          <button id="moveUpButton" class="move-button move-button--up" type="button" aria-label="Mover ou ajustar para cima">↑</button>
+          <button id="moveLeftButton" class="move-button move-button--left" type="button" aria-label="Mover para a esquerda">←</button>
+          <span class="movement-pad__core" aria-hidden="true"></span>
+          <button id="moveRightButton" class="move-button move-button--right" type="button" aria-label="Mover para a direita">→</button>
+          <button id="moveDownButton" class="move-button move-button--down" type="button" aria-label="Mover ou cair mais rápido">↓</button>
+        </div>
+        <button
+          id="jumpButton"
+          class="jump-button"
+          type="button"
+          aria-label="Pular. Toque para salto curto ou segure para salto alto."
+        >
+          <span class="jump-button__icon" aria-hidden="true">↑</span>
+          <strong>PULAR</strong>
+          <small>toque / segure</small>
+        </button>
+      </aside>
+
+      <footer id="gameFooter" class="game-footer is-app-hidden">
+        <p id="controlHint"><kbd>ESPAÇO</kbd> toque para salto curto • segure para salto alto</p>
+        <p>Feito somente com HTML, CSS e JavaScript.</p>
+      </footer>
+    </main>
+
+    <section
+      id="orientationGate"
+      class="orientation-gate is-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="orientationTitle"
+      aria-describedby="orientationText orientationHint"
+    >
+      <div class="orientation-ambient" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="orientation-card">
+        <div class="rotate-stage" aria-hidden="true">
+          <div class="phone-orbit"></div>
+          <div class="phone-device">
+            <span class="phone-screen"></span>
+            <span class="phone-speaker"></span>
+            <span class="phone-home"></span>
+          </div>
+          <div class="rotate-arrow">
+            <span class="rotate-arrow__arc"></span>
+            <span class="rotate-arrow__tip"></span>
+          </div>
+          <span class="landscape-glow"></span>
+        </div>
+
+        <p class="orientation-kicker">MODO MOBILE</p>
+        <h2 id="orientationTitle">Jogue na horizontal</h2>
+        <p id="orientationText" class="orientation-copy">
+          Este jogo foi desenvolvido para aproveitar melhor sua tela no modo paisagem.
+        </p>
+        <button id="landscapeButton" class="landscape-button" type="button">
+          <span aria-hidden="true">↻</span>
+          Ativar modo horizontal
+        </button>
+        <p id="orientationHint" class="orientation-hint">
+          Gire seu celular para continuar. Se o navegador permitir, a rotação será solicitada automaticamente.
+        </p>
+      </div>
+    </section>
+
+    <noscript>
+      <p class="noscript-message">
+        Ative o JavaScript no navegador para jogar.
+      </p>
+    </noscript>
+    <script src="assets/javascript/script.js?v=3.4"></script>
+  </body>
 </html>
