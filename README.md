@@ -1,8 +1,19 @@
-# Jogo de Pular — V3.7 Responsive Joystick & Facing Fix
+# Jogo de Pular — V3.8 Accessible HUD & Escape Menu
 
 A lightweight arcade game built with **HTML, CSS and Vanilla JavaScript**, now featuring two distinct game modes while preserving the visual identity, animated character, and movement style established in the V2.2 version.
 
-Version **V3.7** keeps the zigzag Ascension gameplay and V2.2 character while replacing the laggy full-screen touchpad with a **virtual joystick on the left and a dedicated jump button on the right**. The game remains static and compatible with GitHub Pages.
+Version **V3.8** keeps the zigzag Ascension gameplay and V2.2 character while replacing the laggy full-screen touchpad with a **virtual joystick on the left and a dedicated jump button on the right**. The game remains static and compatible with GitHub Pages.
+
+---
+
+## What Changed in V3.8
+
+- **Escape shortcut (desktop):** press `Esc` while playing to pause and open the **Return to menu?** confirmation. The run is only ended after choosing **Return to modes**. Press `Esc` again or **Continue** to cancel and resume.
+- **Unified menu logic:** the HUD menu icon and Escape use the same confirmation logic, preventing accidental loss of a run.
+- **Redesigned HUD:** clear custom SVG icons for **MODOS**, **PAUSA / SEGUIR**, and **SOM / MUDO**, with readable labels on desktop and mobile.
+- **Mobile improvements:** larger tap targets, stronger contrast, legible score/level cards and a compact confirmation dialog that fits landscape phones.
+- **Better confirmation text and button emphasis:** clear distinction between **Continue** and **Return to modes** without changing game physics, character animations, power-ups or game modes.
+- **GitHub Pages friendly:** the static `index.html`, `README.md` and `assets/` structure is unchanged.
 
 ---
 
@@ -169,6 +180,7 @@ Only landing on the next valid platform in the expected sequence advances the cl
 | Input | Action |
 |---|---|
 | `Space` | Start / jump / restart |
+| `Esc` | Pause and confirm returning to the mode menu |
 | Quick press | Short jump |
 | Hold | Higher jump |
 
@@ -182,6 +194,7 @@ Only landing on the next valid platform in the expected sequence advances the cl
 | `D` | Move right |
 | `Space` | Jump |
 | Arrow keys | Alternative directional controls |
+| `Esc` | Pause and confirm returning to the mode menu |
 
 `A` and `D` control movement both on platforms and in the air.
 

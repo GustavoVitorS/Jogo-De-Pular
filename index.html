@@ -8,18 +8,18 @@
     />
     <meta
       name="description"
-      content="Jogo de Pular V3.7 — joystick responsivo e salto por toque no celular, performance otimizada e Ascensão em zigue-zague."
+      content="Jogo de Pular V3.8 — HUD acessível, Esc para menu e joystick responsivo e salto por toque no celular, performance otimizada e Ascensão em zigue-zague."
     />
     <meta name="theme-color" content="#130d2b" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="format-detection" content="telephone=no" />
-    <title>Jogo de Pular V3.7 — Responsive Joystick & Facing Fix</title>
+    <title>Jogo de Pular V3.8 — Accessible HUD & Escape Menu</title>
     <link rel="manifest" href="assets/manifest.webmanifest" />
     <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
-    <link rel="stylesheet" href="assets/css/style.css?v=3.7" />
+    <link rel="stylesheet" href="assets/css/style.css?v=3.8" />
   </head>
   <body>
     <main class="page-shell">
@@ -27,7 +27,7 @@
         <div class="brand">
           <span class="brand-mark" aria-hidden="true"><span></span></span>
           <div>
-            <p id="brandEyebrow" class="eyebrow">Arcade • V3.7</p>
+            <p id="brandEyebrow" class="eyebrow">Arcade • V3.8</p>
             <h1>Jogo de <span>Pular</span></h1>
           </div>
         </div>
@@ -128,33 +128,27 @@
             </div>
           </div>
 
-          <div class="hud-actions">
-            <button
-              id="menuButton"
-              class="icon-button"
-              type="button"
-              aria-label="Voltar ao menu de modos"
-              title="Modos"
-            >
-              <span aria-hidden="true">⌂</span>
+          <div class="hud-actions" role="group" aria-label="Ações do jogo">
+            <button id="menuButton" class="icon-button" type="button"
+              aria-label="Abrir confirmação para voltar aos modos (Esc)" title="Menu (Esc)" aria-keyshortcuts="Escape">
+              <span class="hud-action__glyph" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="m3 11 9-7 9 7"/><path d="M5.5 10.5V20h13v-9.5M10 20v-6h4v6"/></svg>
+              </span>
+              <span class="hud-action__label" aria-hidden="true">MODOS</span>
             </button>
-            <button
-              id="pauseButton"
-              class="icon-button"
-              type="button"
-              aria-label="Pausar jogo"
-              title="Pausar"
-            >
-              <span aria-hidden="true">Ⅱ</span>
+            <button id="pauseButton" class="icon-button" type="button"
+              aria-label="Pausar jogo" title="Pausar">
+              <span id="pauseIcon" class="hud-action__glyph" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M8 5v14M16 5v14"/></svg>
+              </span>
+              <span id="pauseCaption" class="hud-action__label" aria-hidden="true">PAUSA</span>
             </button>
-            <button
-              id="soundButton"
-              class="icon-button"
-              type="button"
-              aria-label="Desativar som"
-              title="Som"
-            >
-              <span id="soundIcon" aria-hidden="true">♪</span>
+            <button id="soundButton" class="icon-button" type="button"
+              aria-label="Desativar som" title="Som">
+              <span id="soundIcon" class="hud-action__glyph" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M9 18V6l11-2v12"/><circle cx="5.5" cy="18" r="3"/><circle cx="16.5" cy="16" r="3"/></svg>
+              </span>
+              <span id="soundCaption" class="hud-action__label" aria-hidden="true">SOM</span>
             </button>
           </div>
 
@@ -198,14 +192,14 @@
 
         <div id="pauseOverlay" class="overlay" aria-hidden="true">
           <div class="overlay-card overlay-card--compact">
-            <p class="overlay-kicker">Respire um pouco</p>
+            <p id="pauseKicker" class="overlay-kicker">PARTIDA EM PAUSA</p>
             <h2 id="pauseTitle">Jogo pausado</h2>
             <p id="pauseMessage" class="overlay-copy">
               Seu progresso está seguro.
             </p>
             <div class="overlay-actions">
-              <button id="resumeButton" class="primary-button" type="button">Continuar</button>
-              <button id="pauseMenuButton" class="secondary-button" type="button">Voltar ao menu</button>
+              <button id="resumeButton" class="primary-button" type="button"><span aria-hidden="true">▶</span> Continuar</button>
+              <button id="pauseMenuButton" class="secondary-button" type="button"><span aria-hidden="true">⌂</span> Voltar aos modos</button>
             </div>
           </div>
         </div>
@@ -272,6 +266,7 @@
 
       <footer id="gameFooter" class="game-footer is-app-hidden">
         <p id="controlHint"><kbd>ESPAÇO</kbd> toque para salto curto • segure para salto alto</p>
+        <p class="desktop-prompt footer-esc-hint"><kbd>ESC</kbd> voltar ao menu</p>
         <p>Feito somente com HTML, CSS e JavaScript.</p>
       </footer>
     </main>
@@ -322,6 +317,6 @@
         Ative o JavaScript no navegador para jogar.
       </p>
     </noscript>
-    <script src="assets/javascript/script.js?v=3.7"></script>
+    <script src="assets/javascript/script.js?v=3.8"></script>
   </body>
 </html>

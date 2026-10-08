@@ -49,7 +49,10 @@
     powerLabel: document.querySelector("#powerLabel"),
     powerTime: document.querySelector("#powerTime"),
     powerProgress: document.querySelector("#powerProgress"),
-    pauseIcon: document.querySelector("#pauseButton span"),
+    pauseIcon: document.querySelector("#pauseIcon"),
+    pauseCaption: document.querySelector("#pauseCaption"),
+    soundCaption: document.querySelector("#soundCaption"),
+    pauseKicker: document.querySelector("#pauseKicker"),
     recordBanner: document.querySelector("#newRecordBanner"),
     status: document.querySelector("#gameStatus"),
     gameFrame: document.querySelector("#gameFrame"),
@@ -468,7 +471,10 @@
   }
 
   function updateSoundButton() {
-    ui.soundIcon.textContent = audio.muted ? "×" : "♪";
+    ui.soundIcon.innerHTML = audio.muted
+      ? '<svg viewBox="0 0 24 24" focusable="false"><path d="M9 18V6l11-2v6M5 5l14 14"/><circle cx="5.5" cy="18" r="3"/></svg>'
+      : '<svg viewBox="0 0 24 24" focusable="false"><path d="M9 18V6l11-2v12"/><circle cx="5.5" cy="18" r="3"/><circle cx="16.5" cy="16" r="3"/></svg>';
+    ui.soundCaption.textContent = audio.muted ? "MUDO" : "SOM";
     ui.soundButton.setAttribute("aria-label", audio.muted ? "Ativar som" : "Desativar som");
     ui.soundButton.title = audio.muted ? "Ativar som" : "Desativar som";
   }
@@ -507,7 +513,10 @@
     }
     if (force || interfaceCache.paused !== paused) {
       interfaceCache.paused = paused;
-      ui.pauseIcon.textContent = paused ? "▶" : "Ⅱ";
+      ui.pauseIcon.innerHTML = paused
+        ? '<svg viewBox="0 0 24 24" focusable="false"><path d="m8 5 11 7-11 7z"/></svg>'
+        : '<svg viewBox="0 0 24 24" focusable="false"><path d="M8 5v14M16 5v14"/></svg>';
+      ui.pauseCaption.textContent = paused ? "SEGUIR" : "PAUSA";
       ui.pauseButton.setAttribute("aria-label", pauseLabel);
       ui.pauseButton.title = paused ? "Continuar" : "Pausar";
     }
@@ -827,12 +836,13 @@
     forceNextFrame = true;
     player.jumpHeld = false;
     clearAscensionMovement();
-    ui.pauseTitle.textContent = reason === "focus" ? "Corrida interrompida" : reason === "menu" ? "Voltar ao menu?" : "Jogo pausado";
+    ui.pauseTitle.textContent = reason === "focus" ? "Partida interrompida" : reason === "menu" ? "Voltar ao menu?" : "Jogo pausado";
+    ui.pauseKicker.textContent = reason === "menu" ? "SAIR DA PARTIDA?" : "PARTIDA EM PAUSA";
     ui.pauseMessage.textContent =
       reason === "focus"
         ? "A janela perdeu o foco. Continue quando estiver pronto."
         : reason === "menu"
-          ? "A partida atual será encerrada. Você poderá escolher outro modo."
+          ? "Seu progresso será salvo no recorde, mas esta partida terminará. Deseja escolher outro modo?"
           : "Seu progresso está seguro.";
     setOverlay(ui.pauseOverlay, true);
     setStatus("Jogo pausado.");
@@ -847,6 +857,7 @@
     lastRenderTimestamp = 0;
     forceNextFrame = true;
     setOverlay(ui.pauseOverlay, false);
+    ui.pauseKicker.textContent = "PARTIDA EM PAUSA";
     setStatus("Corrida retomada.");
     updateInterface();
   }
@@ -1695,7 +1706,7 @@
     ui.gameFooter.classList.add("is-app-hidden");
     document.body.classList.add("is-main-menu");
     document.body.classList.remove("is-ascension-mode");
-    ui.brandEyebrow.textContent = "Arcade • V3.7";
+    ui.brandEyebrow.textContent = "Arcade • V3.8";
     ui.tagline.textContent = "O mesmo ritmo da V2.2, agora com dois desafios.";
     resetInterfaceCache();
     updateInterface(true);
@@ -2628,7 +2639,34 @@
     });
   }
 
+  // Esc on desktop opens the existing exit confirmation without ending the run.
+  // A second press cancels the prompt and resumes; never hijack editable inputs.
+  function openReturnToMenuConfirmation() {
+    if (gameState === "running") {
+      pauseGame("menu");
+    } else if (gameState === "paused" && !orientationPaused) {
+      ui.pauseTitle.textContent = "Voltar ao menu?";
+      ui.pauseKicker.textContent = "SAIR DA PARTIDA?";
+      ui.pauseMessage.textContent = "Seu progresso será salvo no recorde, mas esta partida terminará. Deseja escolher outro modo?";
+      setOverlay(ui.pauseOverlay, true);
+    } else if (gameState === "menu" || gameState === "gameover") {
+      showModeMenu();
+    }
+  }
+
   document.addEventListener("keydown", (event) => {
+    if (event.code === "Escape" && !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey) {
+      if (!activeMode || (event.target && /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))) return;
+      event.preventDefault();
+      if (gameState === "paused" && ui.pauseOverlay.classList.contains("is-visible") &&
+          ui.pauseTitle.textContent === "Voltar ao menu?" && !orientationPaused) {
+        resumeGame();
+      } else {
+        openReturnToMenuConfirmation();
+      }
+      return;
+    }
+
     const ascensionDirections = {
       KeyW: "up", ArrowUp: "up",
       KeyS: "down", ArrowDown: "down",
@@ -2817,17 +2855,7 @@
   ui.pauseMenuButton.addEventListener("click", returnToMenu);
   ui.menuButton.addEventListener("click", () => {
     audio.ensureContext();
-    if (gameState === "running") {
-      pauseGame("menu");
-      ui.pauseTitle.textContent = "Voltar ao menu?";
-      ui.pauseMessage.textContent = "A partida atual será encerrada. Você poderá escolher outro modo.";
-    } else if (gameState === "paused") {
-      ui.pauseTitle.textContent = "Voltar ao menu?";
-      ui.pauseMessage.textContent = "A partida atual será encerrada. Você poderá escolher outro modo.";
-      setOverlay(ui.pauseOverlay, true);
-    } else {
-      showModeMenu();
-    }
+    openReturnToMenuConfirmation();
   });
 
   ui.landscapeButton.addEventListener("click", async () => {
