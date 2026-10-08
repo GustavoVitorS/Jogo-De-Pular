@@ -140,9 +140,9 @@
     reviveInvulnerability: 1.4,
     groundMoveSpeed: 540,
     airMoveSpeed: 760,
-    groundAcceleration: 4600,
-    airAcceleration: 3900,
-    horizontalDrag: 4200,
+    groundAcceleration: 5800,
+    airAcceleration: 5100,
+    horizontalDrag: 5400,
     airUpControl: 560,
     airDownControl: 1450,
     maximumFallSpeed: 1120,
@@ -271,6 +271,7 @@
   let joystickCenterX = 0;
   let joystickCenterY = 0;
   let joystickRadius = 42;
+  let joystickFullTiltDistance = 22;
   let joystickVisualX = 0;
   let joystickVisualY = 0;
   let mobileLowQuality = false;
@@ -1451,7 +1452,8 @@
     const runBounce = player.grounded ? Math.abs(Math.sin(player.runPhase)) * 2.2 * ascSpeedBlend : 0;
     const centerX = player.x + player.width / 2;
     const centerY = player.y + player.height / 2 + runBounce;
-    const facing = activeMode === "ascension" ? (player.facing || 1) : 1;
+    // Sprite facing is discrete. Analog joystick magnitude must NEVER become an X-scale.
+    const facing = activeMode === "ascension" && player.facing < 0 ? -1 : 1;
 
     context.save();
     context.translate(centerX, centerY);
@@ -1693,7 +1695,7 @@
     ui.gameFooter.classList.add("is-app-hidden");
     document.body.classList.add("is-main-menu");
     document.body.classList.remove("is-ascension-mode");
-    ui.brandEyebrow.textContent = "Arcade • V3.6";
+    ui.brandEyebrow.textContent = "Arcade • V3.7";
     ui.tagline.textContent = "O mesmo ritmo da V2.2, agora com dois desafios.";
     resetInterfaceCache();
     updateInterface(true);
@@ -1728,8 +1730,8 @@
       ui.gameFrame.setAttribute("aria-label", "Área do Modo Ascensão do Jogo de Pular");
       canvas.setAttribute("aria-label", "Modo Ascensão. Use WASD para se mover e Espaço para pular. No celular, use o joystick e o botão de pulo.");
       if (ui.controlHint) ui.controlHint.innerHTML = '<kbd>WASD</kbd> mover • <kbd>ESPAÇO</kbd> pular • mobile: joystick + botão';
-      if (ui.touchStartHint) ui.touchStartHint.innerHTML = 'Use o botão <strong>PULAR</strong> para começar';
-      if (ui.touchRetryHint) ui.touchRetryHint.innerHTML = 'Toque em <strong>PULAR</strong> para tentar novamente';
+      if (ui.touchStartHint) ui.touchStartHint.innerHTML = 'Toque na <strong>seta ↑</strong> para começar';
+      if (ui.touchRetryHint) ui.touchRetryHint.innerHTML = 'Toque na <strong>seta ↑</strong> para tentar novamente';
     }
   }
 
@@ -2102,8 +2104,10 @@
 
     const keyboardAxis = (ascMoveInput.right ? 1 : 0) - (ascMoveInput.left ? 1 : 0);
     const horizontalAxis = clamp(keyboardAxis + ascTouchAxis, -1, 1);
-    if (horizontalAxis !== 0) player.facing = horizontalAxis;
-    else if (Math.abs(player.velocityX) > 24) player.facing = Math.sign(player.velocityX);
+    // Change appearance by direction only, not by joystick strength (0.05 would flatten the sprite).
+    if (horizontalAxis > 0.08) player.facing = 1;
+    else if (horizontalAxis < -0.08) player.facing = -1;
+    else if (Math.abs(player.velocityX) > 42) player.facing = Math.sign(player.velocityX);
 
     const locomotionSpeed = Math.abs(player.velocityX);
     if (player.grounded) {
@@ -2117,7 +2121,10 @@
 
     if (horizontalAxis !== 0) {
       const difference = targetHorizontalSpeed - player.velocityX;
-      const maxChange = horizontalAcceleration * deltaTime;
+      // Reverse rapidly when switching left/right: momentum should not feel
+      // like input lag on a compact touch joystick.
+      const reversing = player.velocityX * horizontalAxis < 0;
+      const maxChange = horizontalAcceleration * (reversing ? 2.2 : 1) * deltaTime;
       player.velocityX += clamp(difference, -maxChange, maxChange);
     } else {
       const drag = ASC_CONFIG.horizontalDrag * deltaTime;
@@ -2671,22 +2678,36 @@
   });
 
 
-  // V3.6: dedicated, composited joystick; no DOM measurements or style
-  // layout writes while moving (except a transform on its own thumb).
+  // V3.7: short-throw joystick. A modest horizontal drag reaches full speed;
+  // visual thumb travel is independent of the physics input for good responsiveness.
+  function joystickAxis(displacement, deadZone, fullTilt) {
+    const distance = Math.abs(displacement);
+    if (distance <= deadZone) return 0;
+    return Math.sign(displacement) * clamp((distance - deadZone) / (fullTilt - deadZone), 0, 1);
+  }
+
   function joystickMove(event) {
     if (event.pointerId !== joystickPointerId) return;
     if (event.cancelable) event.preventDefault();
     const dx = event.clientX - joystickCenterX;
     const dy = event.clientY - joystickCenterY;
     const magnitude = Math.hypot(dx, dy);
-    const fraction = Math.min(1, magnitude / joystickRadius);
-    const active = fraction < 0.13 ? 0 : (fraction - 0.13) / 0.87;
-    const norm = magnitude > 0.001 ? 1 / magnitude : 0;
-    ascTouchAxis = clamp(dx * norm * active, -1, 1);
-    ascTouchVerticalAxis = clamp(dy * norm * active, -1, 1);
-    const thumbX = dx * norm * fraction * joystickRadius;
-    const thumbY = dy * norm * fraction * joystickRadius;
-    // One GPU-composited transform; no getBoundingClientRect() on move.
+
+    // X responds independently of Y, so diagonal swipes can still attain full
+    // horizontal movement without requiring the thumb to reach the rim.
+    ascTouchAxis = joystickAxis(dx, 3, joystickFullTiltDistance);
+
+    // S/drop is deliberately harder to activate than left/right steering:
+    // a diagonal jump to an opposite ledge should not drop the player by accident.
+    const verticalIntent = Math.abs(dy) > Math.abs(dx) * 1.25;
+    ascTouchVerticalAxis = verticalIntent
+      ? joystickAxis(dy, 8, joystickFullTiltDistance * 1.45)
+      : 0;
+
+    const visualFraction = magnitude > 0 ? Math.min(1, joystickRadius / magnitude) : 0;
+    const thumbX = dx * visualFraction;
+    const thumbY = dy * visualFraction;
+    // Composited transform only — no DOM reads on pointermove.
     if (Math.abs(thumbX - joystickVisualX) > 0.4 || Math.abs(thumbY - joystickVisualY) > 0.4) {
       joystickVisualX = thumbX;
       joystickVisualY = thumbY;
@@ -2701,7 +2722,8 @@
     const bounds = ui.virtualJoystick.getBoundingClientRect();
     joystickCenterX = bounds.left + bounds.width / 2;
     joystickCenterY = bounds.top + bounds.height / 2;
-    joystickRadius = Math.max(18, bounds.width * 0.31);
+    joystickRadius = Math.max(20, bounds.width * 0.27);
+    joystickFullTiltDistance = Math.max(16, bounds.width * 0.20);
     ui.virtualJoystick.classList.add("is-active");
     try { ui.virtualJoystick.setPointerCapture(event.pointerId); } catch { /* optional */ }
     joystickMove(event);

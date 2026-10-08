@@ -1,8 +1,19 @@
-# Jogo de Pular — V3.6 Optimized Mobile Joystick
+# Jogo de Pular — V3.7 Responsive Joystick & Facing Fix
 
 A lightweight arcade game built with **HTML, CSS and Vanilla JavaScript**, now featuring two distinct game modes while preserving the visual identity, animated character, and movement style established in the V2.2 version.
 
-Version **V3.6** keeps the zigzag Ascension gameplay and V2.2 character while replacing the laggy full-screen touchpad with a **virtual joystick on the left and a dedicated jump button on the right**. The game remains static and compatible with GitHub Pages.
+Version **V3.7** keeps the zigzag Ascension gameplay and V2.2 character while replacing the laggy full-screen touchpad with a **virtual joystick on the left and a dedicated jump button on the right**. The game remains static and compatible with GitHub Pages.
+
+---
+
+## What Changed in V3.7
+
+- **Fixed character flattening on mobile:** analog joystick values are no longer used as the sprite's horizontal scale. Left/right facing is always a full-width mirror, keeping the original V2.2 character and leg animation readable.
+- **Faster joystick response:** a short drag (roughly 16–22 CSS pixels, depending on the joystick size) can reach full horizontal input without having to push all the way to the edge.
+- **Better directional changes:** slightly stronger ground/air acceleration and braking help the player steer between Ascension platforms.
+- **Fewer accidental falls:** vertical/drop input requires a predominantly vertical joystick gesture rather than an ordinary diagonal steering gesture.
+- **Arrow-only jump button:** a large, clear upward arrow replaces the visible JUMP text, while the button keeps an accessible label for screen readers.
+- Original visuals, Classic Mode controls, checkpoints, scores, power-ups, mobile landscape support, folder structure, and GitHub Pages compatibility are preserved.
 
 ---
 
@@ -657,3 +668,12 @@ Manual device rotation may still be required due to browser limitations.
 This repository currently does not declare a license.
 
 Add a license before redistributing the project under explicit terms or accepting external contributions.
+
+---
+
+## V3.7 — Responsive Joystick & Facing Fix
+
+- Eliminates the paper-thin character bug when moving with a partially tilted joystick.
+- Makes horizontal input more immediate and changes direction in response to the player's stick position.
+- Prevents accidental fast-fall commands during side-to-side control.
+- Replaces the jump button caption with a large upward arrow.

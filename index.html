@@ -8,18 +8,18 @@
     />
     <meta
       name="description"
-      content="Jogo de Pular V3.6 — joystick e salto por toque no celular, performance otimizada e Ascensão em zigue-zague."
+      content="Jogo de Pular V3.7 — joystick responsivo e salto por toque no celular, performance otimizada e Ascensão em zigue-zague."
     />
     <meta name="theme-color" content="#130d2b" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="format-detection" content="telephone=no" />
-    <title>Jogo de Pular V3.6 — Optimized Mobile Joystick</title>
+    <title>Jogo de Pular V3.7 — Responsive Joystick & Facing Fix</title>
     <link rel="manifest" href="assets/manifest.webmanifest" />
     <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
-    <link rel="stylesheet" href="assets/css/style.css?v=3.6" />
+    <link rel="stylesheet" href="assets/css/style.css?v=3.7" />
   </head>
   <body>
     <main class="page-shell">
@@ -27,7 +27,7 @@
         <div class="brand">
           <span class="brand-mark" aria-hidden="true"><span></span></span>
           <div>
-            <p id="brandEyebrow" class="eyebrow">Arcade • V3.6</p>
+            <p id="brandEyebrow" class="eyebrow">Arcade • V3.7</p>
             <h1>Jogo de <span>Pular</span></h1>
           </div>
         </div>
@@ -187,7 +187,7 @@
             </div>
             <div class="touch-prompt mobile-prompt" aria-hidden="true">
               <span class="touch-prompt__dot"></span>
-              <span id="touchStartHint">Toque em <strong>PULAR</strong> para começar</span>
+              <span id="touchStartHint">Toque na <strong>seta ↑</strong> para começar</span>
             </div>
             <p class="start-record">
               <span id="startBestLabel">Melhor corrida</span> <strong id="startBestValue">00000</strong>
@@ -235,7 +235,7 @@
             </div>
             <div class="touch-prompt mobile-prompt" aria-hidden="true">
               <span class="touch-prompt__dot"></span>
-              <span id="touchRetryHint">Toque em <strong>PULAR</strong> para tentar novamente</span>
+              <span id="touchRetryHint">Toque na <strong>seta ↑</strong> para tentar novamente</span>
             </div>
             <button id="gameOverMenuButton" class="text-button" type="button">Voltar aos modos</button>
           </div>
@@ -263,7 +263,9 @@
             <span id="joystickThumb" class="virtual-joystick__thumb" aria-hidden="true"></span>
           </div>
           <button id="jumpButton" class="mobile-jump-button" type="button" aria-label="Pular. Toque para salto curto, segure para salto alto.">
-            <span aria-hidden="true">↑</span><strong>PULAR</strong>
+            <svg class="mobile-jump-button__icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+              <path d="M24 40V10M11 23 24 10l13 13" fill="none" stroke="currentColor" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </button>
         </div>
       </section>
@@ -320,6 +322,6 @@
         Ative o JavaScript no navegador para jogar.
       </p>
     </noscript>
-    <script src="assets/javascript/script.js?v=3.6"></script>
+    <script src="assets/javascript/script.js?v=3.7"></script>
   </body>
 </html>

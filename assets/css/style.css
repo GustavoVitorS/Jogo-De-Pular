@@ -2286,7 +2286,7 @@ body.is-mobile.is-portrait .page-shell {
 }
 
 /* =========================================================
-   V3.6 — Low-overhead mobile joystick + dedicated jump button
+   V3.7 — Responsive short-throw joystick + arrow-only jump button
    ========================================================= */
 .mobile-game-controls { display: none; }
 
@@ -2352,15 +2352,18 @@ body.is-mobile.is-landscape .mobile-game-controls:not(.is-app-hidden) {
   box-shadow: inset 0 2px 6px rgba(255,255,255,.75), 0 0 13px rgba(255,174,192,.3);
   color: #271234;
   display: grid;
-  place-content: center;
-  gap: 1px;
+  place-items: center;
   font: inherit;
   text-align: center;
-  font-size: clamp(11px, 3vh, 14px);
   cursor: pointer;
 }
-.mobile-jump-button > span { font-size: 1.5em; line-height: 1.1; font-weight: 900; }
-.mobile-jump-button > strong { font-size: .85em; letter-spacing: .06em; }
+.mobile-jump-button__icon {
+  display: block;
+  width: 57%;
+  height: 57%;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(39, 18, 52, .17));
+}
 .mobile-jump-button.is-pressed { transform: scale(.94); filter: brightness(1.08); }
 
 /* Reduce expensive GPU layers and blurs on handheld hardware. */
