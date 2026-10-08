@@ -1,7 +1,7 @@
 {
-  "name": "Jogo de Pular — Preserve & Ascend",
+  "name": "Jogo de Pular — Mobile Touchpad",
   "short_name": "Jogo de Pular",
-  "description": "Jogo arcade neon com Modo Clássico preservado da V2.2 e Modo Ascensão com controle manual WASD.",
+  "description": "Jogo arcade neon com Modo Clássico, Modo Ascensão em zigue-zague e controles mobile por gestos na própria tela.",
   "start_url": "../",
   "scope": "../",
   "display": "fullscreen",

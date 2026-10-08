@@ -63,6 +63,9 @@
     controlHint: document.querySelector("#controlHint"),
     touchStartHint: document.querySelector("#touchStartHint"),
     touchRetryHint: document.querySelector("#touchRetryHint"),
+    touchGestureHint: document.querySelector("#touchGestureHint"),
+    touchGestureHintText: document.querySelector("#touchGestureHintText"),
+    touchPadFeedback: document.querySelector("#touchPadFeedback"),
     orientationGate: document.querySelector("#orientationGate"),
     landscapeButton: document.querySelector("#landscapeButton"),
     orientationText: document.querySelector("#orientationText"),
@@ -269,6 +272,10 @@
   let ascCameraScrollRemaining = 0;
   const ascMoveInput = { up: false, down: false, left: false, right: false };
   const activeMovePointers = new Map();
+  const touchSurfacePointers = new Map();
+  let touchMovePointerId = null;
+  let ascTouchAxis = 0;
+  let ascTouchVerticalAxis = 0;
 
   const renderCache = {
     groundGradient: null,
@@ -283,7 +290,15 @@
     ascMoveInput.down = false;
     ascMoveInput.left = false;
     ascMoveInput.right = false;
+    ascTouchAxis = 0;
+    ascTouchVerticalAxis = 0;
+    touchMovePointerId = null;
     activeMovePointers.clear();
+    touchSurfacePointers.clear();
+    if (ui.touchPadFeedback) {
+      ui.touchPadFeedback.classList.add("is-app-hidden");
+      ui.touchPadFeedback.classList.remove("is-active", "is-tap");
+    }
     [ui.moveUpButton, ui.moveLeftButton, ui.moveRightButton, ui.moveDownButton].forEach((button) => {
       button?.classList.remove("is-pressed");
     });
@@ -600,6 +615,7 @@
     if (gameState !== "running") return;
     orientationPaused = true;
     gameState = "paused";
+    clearAscensionMovement();
     player.jumpHeld = false;
     spaceIsDown = false;
     setOverlay(ui.pauseOverlay, false);
@@ -621,7 +637,12 @@
     document.body.classList.toggle("is-mobile", mobileLayout);
     document.body.classList.toggle("is-portrait", portrait);
     document.body.classList.toggle("is-landscape", mobileLayout && !portrait);
-    if (activeMode) ui.touchControls.classList.toggle("is-app-hidden", !mobileLayout || portrait);
+    ui.touchControls.classList.add("is-app-hidden");
+    if (ui.touchGestureHint) {
+      const showTouchHint = Boolean(activeMode) && mobileLayout && !portrait;
+      ui.touchGestureHint.classList.toggle("is-app-hidden", !showTouchHint);
+      ui.touchGestureHint.setAttribute("aria-hidden", String(!showTouchHint));
+    }
 
     ui.orientationGate.classList.toggle("is-hidden", !portrait);
     ui.orientationGate.setAttribute("aria-hidden", String(!portrait));
@@ -1658,10 +1679,11 @@
     ui.modeMenu.classList.remove("is-app-hidden");
     ui.gameFrame.classList.add("is-app-hidden");
     ui.touchControls.classList.add("is-app-hidden");
+    ui.touchGestureHint?.classList.add("is-app-hidden");
     ui.gameFooter.classList.add("is-app-hidden");
     document.body.classList.add("is-main-menu");
     document.body.classList.remove("is-ascension-mode");
-    ui.brandEyebrow.textContent = "Arcade • V3.2";
+    ui.brandEyebrow.textContent = "Arcade • V3.5";
     ui.tagline.textContent = "O mesmo ritmo da V2.2, agora com dois desafios.";
     resetInterfaceCache();
     updateInterface(true);
@@ -1680,10 +1702,11 @@
       ui.startBestLabel.textContent = "Melhor corrida";
       ui.gameOverDetails.hidden = true;
       ui.gameFrame.setAttribute("aria-label", "Área do Modo Clássico do Jogo de Pular");
-      canvas.setAttribute("aria-label", "Modo Clássico. Use Espaço no computador ou o botão Pular no celular.");
-      if (ui.controlHint) ui.controlHint.innerHTML = '<kbd>ESPAÇO</kbd> toque para salto curto • segure para salto alto';
-      if (ui.touchStartHint) ui.touchStartHint.innerHTML = 'Toque em <strong>PULAR</strong> para começar';
-      if (ui.touchRetryHint) ui.touchRetryHint.innerHTML = 'Toque em <strong>PULAR</strong> para tentar novamente';
+      canvas.setAttribute("aria-label", "Modo Clássico. Use Espaço no computador ou toque na tela no celular para pular.");
+      if (ui.controlHint) ui.controlHint.innerHTML = '<kbd>ESPAÇO</kbd> salto curto / alto • mobile: toque na tela';
+      if (ui.touchStartHint) ui.touchStartHint.innerHTML = 'Toque <strong>na tela</strong> para começar';
+      if (ui.touchRetryHint) ui.touchRetryHint.innerHTML = 'Toque <strong>na tela</strong> para tentar novamente';
+      if (ui.touchGestureHintText) ui.touchGestureHintText.textContent = 'Toque na tela para pular';
     } else {
       ui.brandEyebrow.textContent = "Vertical arcade • Modo 2";
       ui.tagline.textContent = "Suba, desvie e alcance o próximo checkpoint.";
@@ -1694,10 +1717,11 @@
       ui.startBestLabel.textContent = "Melhor ascensão";
       ui.gameOverDetails.hidden = true;
       ui.gameFrame.setAttribute("aria-label", "Área do Modo Ascensão do Jogo de Pular");
-      canvas.setAttribute("aria-label", "Modo Ascensão. Use WASD para se mover e Espaço para pular. No celular, use o direcional e o botão Pular.");
-      if (ui.controlHint) ui.controlHint.innerHTML = '<kbd>WASD</kbd> mover • <kbd>ESPAÇO</kbd> pular • alterne os lados';
-      if (ui.touchStartHint) ui.touchStartHint.innerHTML = 'Use o <strong>direcional</strong> + <strong>PULAR</strong> para começar';
-      if (ui.touchRetryHint) ui.touchRetryHint.innerHTML = 'Use o <strong>direcional</strong> + <strong>PULAR</strong> para tentar novamente';
+      canvas.setAttribute("aria-label", "Modo Ascensão. Use WASD para se mover e Espaço para pular. No celular, arraste o dedo horizontalmente para mover e toque na tela para pular.");
+      if (ui.controlHint) ui.controlHint.innerHTML = '<kbd>WASD</kbd> mover • <kbd>ESPAÇO</kbd> pular • mobile: arraste + toque';
+      if (ui.touchStartHint) ui.touchStartHint.innerHTML = '<strong>Arraste</strong> para mover • <strong>toque</strong> para começar';
+      if (ui.touchRetryHint) ui.touchRetryHint.innerHTML = '<strong>Arraste</strong> para mover • <strong>toque</strong> para tentar novamente';
+      if (ui.touchGestureHintText) ui.touchGestureHintText.textContent = 'Arraste ↔ para mover • toque para pular';
     }
   }
 
@@ -1710,7 +1734,7 @@
     ui.modeMenu.classList.add("is-app-hidden");
     ui.gameFrame.classList.remove("is-app-hidden");
     ui.gameFooter.classList.remove("is-app-hidden");
-    ui.touchControls.classList.toggle("is-app-hidden", !mobileLayout);
+    ui.touchControls.classList.add("is-app-hidden");
     bestScore = mode === "classic" ? classicBestScore : ascensionBestScore;
     configureModeCopy(mode);
     currentPower = null;
@@ -2069,7 +2093,8 @@
     ascLandingLock = Math.max(0, ascLandingLock - deltaTime);
     const previousBottom = player.y + player.height;
 
-    const horizontalAxis = (ascMoveInput.right ? 1 : 0) - (ascMoveInput.left ? 1 : 0);
+    const keyboardAxis = (ascMoveInput.right ? 1 : 0) - (ascMoveInput.left ? 1 : 0);
+    const horizontalAxis = clamp(keyboardAxis + ascTouchAxis, -1, 1);
     if (horizontalAxis !== 0) player.facing = horizontalAxis;
     else if (Math.abs(player.velocityX) > 24) player.facing = Math.sign(player.velocityX);
 
@@ -2106,7 +2131,8 @@
 
       // S deliberately drops through the current ledge. It is useful for
       // recovering missed collectibles, but costs height and therefore score.
-      if (ascMoveInput.down && support) {
+      const touchDrop = ascTouchVerticalAxis > 0.45;
+      if ((ascMoveInput.down || touchDrop) && support) {
         player.grounded = false;
         player.currentPlatformId = null;
         player.y += 7;
@@ -2129,8 +2155,10 @@
       // slightly extend or soften the arc after Space has launched the player;
       // S commits to a faster descent. This preserves jump timing as the core
       // skill while making coins, power-ups and hazards actively dodgeable.
-      if (ascMoveInput.up) player.velocityY -= ASC_CONFIG.airUpControl * deltaTime;
-      if (ascMoveInput.down) player.velocityY += ASC_CONFIG.airDownControl * deltaTime;
+      const touchUp = ascTouchVerticalAxis < -0.35;
+      const touchDown = ascTouchVerticalAxis > 0.35;
+      if (ascMoveInput.up || touchUp) player.velocityY -= ASC_CONFIG.airUpControl * deltaTime;
+      if (ascMoveInput.down || touchDown) player.velocityY += ASC_CONFIG.airDownControl * deltaTime;
       player.velocityY = Math.min(player.velocityY, ASC_CONFIG.maximumFallSpeed);
 
       player.x += player.velocityX * deltaTime;
@@ -2551,6 +2579,8 @@
             ascCheckpointCount,
             ascReviveReady,
             moveInput: { ...ascMoveInput },
+            touchAxis: Number(ascTouchAxis.toFixed(2)),
+            touchVerticalAxis: Number(ascTouchVerticalAxis.toFixed(2)),
             player: { x: Math.round(player.x), y: Math.round(player.y), grounded: player.grounded, platformId: player.currentPlatformId, side: player.currentSide, facing: player.facing },
             ascProgressOrder,
             ascProgressSide,
@@ -2612,13 +2642,165 @@
   });
 
 
+  const TOUCH_SURFACE = Object.freeze({
+    dragDeadZone: 12,
+    fullSpeedDistance: 88,
+    tapMaxDistance: 15,
+    tapMaxDuration: 420,
+    syntheticJumpHold: 0.14,
+  });
+
+  function isTouchSurfaceTargetBlocked(target) {
+    return Boolean(target?.closest?.("button, a, input, select, textarea, [role='button']"));
+  }
+
+  function resetTouchSurfacePointer(pointerId) {
+    touchSurfacePointers.delete(pointerId);
+    if (touchMovePointerId === pointerId) {
+      touchMovePointerId = null;
+      ascTouchAxis = 0;
+      ascTouchVerticalAxis = 0;
+    }
+  }
+
+  function updateTouchPadFeedback(event, dx = 0, dy = 0, visible = true) {
+    if (!ui.touchPadFeedback) return;
+    if (!visible) {
+      ui.touchPadFeedback.classList.add("is-app-hidden");
+      ui.touchPadFeedback.classList.remove("is-active", "is-tap");
+      return;
+    }
+    const bounds = ui.gameFrame.getBoundingClientRect();
+    const x = clamp(event.clientX - bounds.left, 24, Math.max(24, bounds.width - 24));
+    const y = clamp(event.clientY - bounds.top, 24, Math.max(24, bounds.height - 24));
+    const thumbOffsetX = clamp(dx / 4, -14, 14);
+    const thumbOffsetY = clamp(dy / 4, -14, 14);
+    ui.touchPadFeedback.style.left = `${x}px`;
+    ui.touchPadFeedback.style.top = `${y}px`;
+    ui.touchPadFeedback.style.setProperty("--touch-thumb-x", `${thumbOffsetX}px`);
+    ui.touchPadFeedback.style.setProperty("--touch-thumb-y", `${thumbOffsetY}px`);
+    ui.touchPadFeedback.classList.remove("is-app-hidden");
+    ui.touchPadFeedback.classList.add("is-active");
+  }
+
+  function triggerScreenTapJump() {
+    if (!mobileLayout || isPortraitViewport() || !activeMode) return;
+    audio.ensureContext();
+    requestLandscapeExperience({ silent: true }).catch(() => {});
+
+    if (gameState === "menu" || gameState === "gameover") {
+      startGame();
+      return;
+    }
+    if (gameState !== "running") return;
+
+    spaceIsDown = true;
+    requestJump();
+    window.setTimeout(() => {
+      spaceIsDown = false;
+      releaseJump();
+    }, TOUCH_SURFACE.syntheticJumpHold * 1000);
+  }
+
+  function beginTouchSurfaceGesture(event) {
+    if (!mobileLayout || isPortraitViewport() || !activeMode) return;
+    if (event.pointerType === "mouse" || isTouchSurfaceTargetBlocked(event.target)) return;
+    event.preventDefault();
+    audio.ensureContext();
+    requestLandscapeExperience({ silent: true }).catch(() => {});
+
+    touchSurfacePointers.set(event.pointerId, {
+      startX: event.clientX,
+      startY: event.clientY,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      startedAt: performance.now(),
+      dragging: false,
+    });
+
+    updateTouchPadFeedback(event, 0, 0, true);
+
+    if (typeof ui.gameFrame.setPointerCapture === "function") {
+      try { ui.gameFrame.setPointerCapture(event.pointerId); } catch { /* optional */ }
+    }
+  }
+
+  function moveTouchSurfaceGesture(event) {
+    const gesture = touchSurfacePointers.get(event.pointerId);
+    if (!gesture || !mobileLayout || isPortraitViewport()) return;
+    if (event.cancelable) event.preventDefault();
+
+    gesture.lastX = event.clientX;
+    gesture.lastY = event.clientY;
+    const dx = event.clientX - gesture.startX;
+    const dy = event.clientY - gesture.startY;
+    const distance = Math.hypot(dx, dy);
+
+    if (!gesture.dragging && distance >= TOUCH_SURFACE.dragDeadZone) {
+      gesture.dragging = true;
+      if (touchMovePointerId === null || touchMovePointerId === event.pointerId) touchMovePointerId = event.pointerId;
+    }
+
+    if (activeMode === "ascension" && gesture.dragging && touchMovePointerId === event.pointerId) {
+      const horizontalDominant = Math.abs(dx) >= Math.abs(dy) * 0.72;
+      const verticalDominant = Math.abs(dy) > Math.abs(dx) * 1.12;
+
+      ascTouchAxis = horizontalDominant
+        ? clamp(dx / TOUCH_SURFACE.fullSpeedDistance, -1, 1)
+        : 0;
+      ascTouchVerticalAxis = verticalDominant
+        ? clamp(dy / TOUCH_SURFACE.fullSpeedDistance, -1, 1)
+        : 0;
+
+      if (Math.abs(ascTouchAxis) < 0.08) ascTouchAxis = 0;
+      if (Math.abs(ascTouchVerticalAxis) < 0.12) ascTouchVerticalAxis = 0;
+      updateTouchPadFeedback(event, dx, dy, true);
+    }
+  }
+
+  function endTouchSurfaceGesture(event) {
+    const gesture = touchSurfacePointers.get(event.pointerId);
+    if (!gesture) return;
+    if (event.cancelable) event.preventDefault();
+
+    const elapsed = performance.now() - gesture.startedAt;
+    const distance = Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY);
+    const wasMovementPointer = touchMovePointerId === event.pointerId;
+    const isTap = !gesture.dragging && distance <= TOUCH_SURFACE.tapMaxDistance && elapsed <= TOUCH_SURFACE.tapMaxDuration;
+
+    resetTouchSurfacePointer(event.pointerId);
+    if (wasMovementPointer) {
+      ascTouchAxis = 0;
+      ascTouchVerticalAxis = 0;
+    }
+    if (isTap && ui.touchPadFeedback) {
+      ui.touchPadFeedback.classList.add("is-tap");
+      window.setTimeout(() => updateTouchPadFeedback(event, 0, 0, false), 120);
+      triggerScreenTapJump();
+    } else {
+      updateTouchPadFeedback(event, 0, 0, false);
+    }
+  }
+
+  ui.gameFrame.addEventListener("pointerdown", beginTouchSurfaceGesture, { passive: false });
+  ui.gameFrame.addEventListener("pointermove", moveTouchSurfaceGesture, { passive: false });
+  ui.gameFrame.addEventListener("pointerup", endTouchSurfaceGesture, { passive: false });
+  ui.gameFrame.addEventListener("pointercancel", endTouchSurfaceGesture, { passive: false });
+  ui.gameFrame.addEventListener("lostpointercapture", (event) => {
+    resetTouchSurfacePointer(event.pointerId);
+    if (touchSurfacePointers.size === 0) updateTouchPadFeedback(event, 0, 0, false);
+  });
+  ui.gameFrame.addEventListener("contextmenu", (event) => {
+    if (mobileLayout) event.preventDefault();
+  });
+
   // The first real touch is the earliest standards-compliant opportunity to
   // enter fullscreen and lock orientation on most Android browsers.
   document.addEventListener(
     "pointerdown",
     (event) => {
       if (firstMobileGestureHandled || !isTouchMobileLayout()) return;
-      if (event.target.closest?.("#landscapeButton, #jumpButton")) return;
+      if (event.target.closest?.("#landscapeButton")) return;
       firstMobileGestureHandled = true;
       requestLandscapeExperience().catch(() => {});
     },

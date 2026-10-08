@@ -8,18 +8,18 @@
     />
     <meta
       name="description"
-      content="Jogo de Pular V3.4 — Ascensão com rota lateral obrigatória, sem atalhos verticais e progressão esquerda ↔ direita."
+      content="Jogo de Pular V3.5 — controles mobile por touchpad na própria tela, responsividade refinada e Ascensão em zigue-zague."
     />
     <meta name="theme-color" content="#130d2b" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="format-detection" content="telephone=no" />
-    <title>Jogo de Pular V3.4 — Zigzag Ascension</title>
+    <title>Jogo de Pular V3.5 — Mobile Touchpad</title>
     <link rel="manifest" href="assets/manifest.webmanifest" />
     <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
-    <link rel="stylesheet" href="assets/css/style.css?v=3.4" />
+    <link rel="stylesheet" href="assets/css/style.css?v=3.5" />
   </head>
   <body>
     <main class="page-shell">
@@ -27,7 +27,7 @@
         <div class="brand">
           <span class="brand-mark" aria-hidden="true"><span></span></span>
           <div>
-            <p id="brandEyebrow" class="eyebrow">Arcade • V3.4</p>
+            <p id="brandEyebrow" class="eyebrow">Arcade • V3.5</p>
             <h1>Jogo de <span>Pular</span></h1>
           </div>
         </div>
@@ -253,11 +253,20 @@
         </div>
 
         <p id="gameStatus" class="sr-only" aria-live="polite">
-          Jogo pronto. Pressione Espaço ou use o controle de salto para começar.
+          Jogo pronto. Pressione Espaço no computador ou use gestos na tela no celular.
         </p>
+
+        <div id="touchGestureHint" class="touch-gesture-hint is-app-hidden" aria-hidden="true">
+          <span class="touch-gesture-hint__drag" aria-hidden="true">↔</span>
+          <span id="touchGestureHintText">Arraste para mover • toque para pular</span>
+        </div>
+
+        <div id="touchPadFeedback" class="touch-pad-feedback is-app-hidden" aria-hidden="true">
+          <span class="touch-pad-feedback__thumb"></span>
+        </div>
       </section>
 
-      <aside id="touchControls" class="touch-controls is-app-hidden" aria-label="Controles do jogo no celular">
+      <aside id="touchControls" class="touch-controls is-app-hidden" aria-hidden="true" aria-label="Controles legados ocultos">
         <div id="movementPad" class="movement-pad" aria-label="Movimento no Modo Ascensão">
           <button id="moveUpButton" class="move-button move-button--up" type="button" aria-label="Mover ou ajustar para cima">↑</button>
           <button id="moveLeftButton" class="move-button move-button--left" type="button" aria-label="Mover para a esquerda">←</button>
@@ -329,6 +338,6 @@
         Ative o JavaScript no navegador para jogar.
       </p>
     </noscript>
-    <script src="assets/javascript/script.js?v=3.4"></script>
+    <script src="assets/javascript/script.js?v=3.5"></script>
   </body>
 </html>

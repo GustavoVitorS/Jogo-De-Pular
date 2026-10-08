@@ -1,12 +1,14 @@
-# Jogo de Pular — V3.4 Zigzag Ascension
+# Jogo de Pular — V3.5 Mobile Touchpad
 
-A lightweight arcade game built with **HTML, CSS and Vanilla JavaScript**, now featuring two distinct game modes while preserving the visual identity and movement style of the original project.
+A lightweight arcade game built with **HTML, CSS and Vanilla JavaScript**, now featuring two distinct game modes while preserving the visual identity, animated character, and movement style established in the V2.2 version.
 
-The project began as a very simple jumping prototype and evolved into a responsive arcade experience with an animated character, mobile landscape support, power-ups, progression, a mode-selection menu and the new **Ascension Mode**.
+Version **V3.5** keeps the zigzag Ascension gameplay introduced in V3.4 and significantly improves the mobile experience: on supported mobile devices, the gameplay area itself now works as a **touch surface**, allowing the player to steer by dragging a finger and jump by tapping the screen.
+
+---
 
 ## Screenshots
 
-### Current Mode Selection Menu
+### Mode Selection Menu
 
 ![Mode selection menu](./assets/images/menu-modos.png)
 
@@ -18,32 +20,70 @@ The project began as a very simple jumping prototype and evolved into a responsi
 
 ![Ascension Mode gameplay](./assets/images/gameplay-ascensao.png)
 
-## From the First Version to V3.4
-
-The original version was intentionally minimal: a basic play area and an early foundation for the jumping mechanic.
+### First Version
 
 ![First version of Jogo de Pular](./assets/images/first-version.png)
 
-Since then, the project has grown considerably while keeping the same core idea: **simple controls, precise timing and increasingly difficult challenges**.
+---
 
-### Main improvements since the first version
+## Project Evolution
 
-- complete visual redesign with a purple/pink arcade identity;
-- animated player character with moving legs and jump/landing reactions;
-- richer background with stars, lighting, layered mountains and parallax depth;
-- polished HUD with score, high score and level/stage information;
-- procedural obstacle generation;
-- short and high jump mechanics;
-- coins and temporary power-ups;
-- progressive game speed and difficulty;
-- local high-score persistence;
-- sound generated with Web Audio;
+The project started as a very simple jumping-game prototype inspired by endless runners.
+
+Over time, it evolved into a more complete responsive arcade game with:
+
+- an animated character;
+- progressive difficulty;
+- power-ups;
+- persistent high scores;
+- a dedicated mobile landscape experience;
+- a game-mode selection menu;
+- the original **Classic Mode**;
+- the new **Ascension Mode**;
 - responsive desktop, tablet and mobile layouts;
-- mobile Orientation Gate with landscape-first gameplay;
-- fullscreen/orientation-lock support when allowed by the browser;
-- a new mode-selection menu;
-- the original endless-runner experience preserved as **Classic Mode**;
-- a completely new **Ascension Mode** with manual movement, vertical progression, falling hazards and checkpoints.
+- touch-based gameplay controls.
+
+The main goal of the recent versions has been to expand the game **without losing the visual identity and movement style of V2.2**.
+
+---
+
+## What's New in V3.5
+
+### Mobile Touchpad Controls
+
+The biggest change in V3.5 is the redesigned mobile control system.
+
+The previous mobile side-control panel was removed. The game area itself now acts as the touch controller.
+
+In **Ascension Mode**:
+
+- hold a finger on the gameplay area and **drag left or right** to move the character;
+- horizontal movement intensity follows the distance of the drag;
+- drag mainly upward or downward to reproduce the vertical adjustments used by `W` and `S`;
+- **quickly tap the gameplay area to jump**;
+- multi-touch is supported, so one finger can keep steering while another finger taps to jump.
+
+In **Classic Mode**:
+
+- tap the gameplay area to jump;
+- the original short-jump / high-jump gameplay remains preserved.
+
+### Mobile Responsiveness
+
+The mobile layout was recalibrated to use more of the available landscape screen.
+
+This is especially useful on modern 19.5:9 and 20:9 phones such as the **Redmi Note 13**.
+
+The game uses:
+
+- `VisualViewport`;
+- safe-area insets;
+- `100dvh`;
+- responsive CSS Grid / Flexbox;
+- `clamp()`;
+- the original **1200 × 600** logical gameplay ratio.
+
+The dedicated mobile side-control column was removed, giving the game significantly more usable gameplay width.
 
 ---
 
@@ -52,196 +92,267 @@ Since then, the project has grown considerably while keeping the same core idea:
 ```text
 Open the game
    ↓
-Mobile in portrait? → Orientation Gate → Landscape
+Mobile in portrait?
+   ├── Yes → Orientation Gate → rotate to landscape
+   └── No
    ↓
 Mode Selection Menu
    ├── Mode 1 — Classic
    └── Mode 2 — Ascension
 ```
 
-On desktop, the game opens directly on the mode-selection menu.
+On desktop, the mode-selection menu opens directly.
 
-On phones, portrait orientation first displays the animated landscape warning. Once the device enters landscape, the mode-selection menu becomes available.
+On mobile, portrait orientation shows the animated orientation screen first. Once the device enters landscape mode, the game menu becomes available.
 
 ---
 
-## Mode 1 — Classic
+# Mode 1 — Classic
 
-Classic Mode preserves the gameplay and visual identity established in V2.2 instead of replacing it with a new implementation.
+Classic Mode preserves the gameplay and visual identity of V2.2 instead of rebuilding it from scratch.
 
-### Preserved from V2.2
+## Preserved from V2.2
 
-- original purple player character;
+- original purple character;
 - animated legs while running;
-- visual jump and landing reactions;
-- purple/pink environment;
-- stars, glow, moonlight and layered mountain scenery;
-- original ground design;
+- landing and jumping reactions;
+- purple / pink atmospheric background;
+- stars, glow, moonlight and layered hills;
+- original ground style;
 - HUD;
-- short/high jump physics;
+- short-jump / high-jump physics;
 - procedural obstacle generation;
-- collectible coins;
-- shield, slow-motion and double-score power-ups;
-- progressive speed increase;
-- local high score;
+- collectibles;
+- shield power-up;
+- slow-motion power-up;
+- double-score power-up;
+- increasing game speed;
+- persistent high score;
 - Web Audio effects;
-- touch controls from the mobile version.
+- mobile touch support.
 
-The main additions are integration with the new menu and the ability to return to mode selection during gameplay.
-
-### Desktop controls
-
-- **Space** — start, jump and restart.
-- Quick press — short jump.
-- Hold — higher jump.
+The main additions are integration with the new mode-selection menu and the ability to return to the menu.
 
 ---
 
-## Mode 2 — Ascension
+# Mode 2 — Ascension
 
-Ascension Mode uses the **same animated character and visual language as Classic Mode**, but changes the gameplay into a vertical arcade challenge.
+Ascension Mode uses the **same character and visual identity as V2.2**, but places the player inside a vertical arcade challenge.
 
-The goal is to climb through a sequence of platforms attached to the left and right sides of the arena while avoiding hazards falling from above.
+## Objective
 
-The player must reach the checkpoint to complete the current stage and continue into a faster, more dangerous one.
+Climb by jumping between platforms attached to the **left and right sides of the arena**, avoid falling hazards, collect items, and reach the checkpoint.
 
-### Core mechanics
+Each completed checkpoint starts a harder phase.
 
-- vertical arcade progression;
-- platforms anchored to the **left and right walls**;
-- mandatory zigzag progression between sides;
-- only the next valid platform in the sequence advances the route;
+The goal is to survive as long as possible and achieve the highest score.
+
+---
+
+## Ascension Gameplay
+
+The route is intentionally designed as a **left ↔ right zigzag climb**.
+
+The player cannot progress simply by jumping vertically in the same place.
+
+Only landing on the next valid platform in the expected sequence advances the climb.
+
+### Platform Rules
+
+- platforms are anchored to the left or right side of the arena;
+- the expected route alternates sides;
 - future platforms cannot be used as vertical shortcuts before their turn;
 - previously completed platforms remain available as recovery points;
-- controlled platform generation to keep every jump reachable;
-- manual movement with `WASD` or arrow keys;
-- **Space** is the dedicated jump command;
-- horizontal movement on platforms and while airborne;
-- directional character facing, so the player visibly turns left/right instead of appearing to moonwalk;
-- leg animation reacts to movement speed and direction;
-- light upward adjustment with `W` while airborne;
-- fast fall / platform drop with `S`;
-- variable jump height depending on how long Space is held;
-- vertical camera/scroll progression;
-- falling blocks and projectiles;
-- warning indicators before dangerous objects enter the arena;
-- increasingly frequent and faster hazards each stage;
-- coins placed on riskier movement routes;
-- checkpoints at the end of platform sequences;
-- checkpoint bonuses without resetting the current score;
-- a high score stored separately from Classic Mode.
-
-### Why the zigzag route matters
-
-V3.4 specifically prevents players from completing a stage by repeatedly jumping upward in a straight line.
-
-Progress now requires alternating across the arena:
-
-```text
-LEFT PLATFORM
-      ↗
-        PLAYER
-              ↗
-                RIGHT PLATFORM
-                      ↓
-                PLAYER
-              ↙
-LEFT PLATFORM
-```
-
-The camera only advances after a valid landing on the expected platform, which makes positioning and timing part of the challenge.
-
-### Desktop controls
-
-| Input | Action |
-| --- | --- |
-| `A / D` | Move left/right on platforms and control horizontal movement in the air |
-| `W` | Small upward adjustment while airborne |
-| `S` | Fast fall; drop from a platform when grounded |
-| `Space` | Jump |
-| Arrow keys | Alternative directional controls |
-
-Releasing Space early reduces jump height; holding it longer provides additional lift.
-
-### Ascension power-ups
-
-- **Shield** — absorbs one collision.
-- **Slow Time** — temporarily slows falling hazards.
-- **2× Score** — temporarily doubles score gains.
-- **Second Chance** — returns the player to the last safe platform with brief invulnerability.
+- platform width and spacing are calibrated so jumps remain possible while still requiring precision;
+- checkpoint progress depends on completing the correct platform sequence.
 
 ---
 
-## Mobile and Tablet Controls
-
-The game is designed around **landscape orientation** on mobile devices.
+## Desktop Controls
 
 ### Classic Mode
 
-Classic Mode keeps the V2.2 touch jump control.
+| Input | Action |
+|---|---|
+| `Space` | Start / jump / restart |
+| Quick press | Short jump |
+| Hold | Higher jump |
 
 ### Ascension Mode
 
-Ascension Mode provides:
+| Input | Action |
+|---|---|
+| `W` | Small upward adjustment during the jump |
+| `A` | Move left |
+| `S` | Fast fall / drop from a platform |
+| `D` | Move right |
+| `Space` | Jump |
+| Arrow keys | Alternative directional controls |
 
-- a four-direction touch pad corresponding to `WASD`;
-- a dedicated **JUMP** button;
-- short/long jump behavior equivalent to desktop;
-- touch targets adapted for compact landscape displays.
+`A` and `D` control movement both on platforms and in the air.
+
+The character also changes facing direction and leg animation according to movement, avoiding the previous "moonwalk" effect.
+
+The game no longer automatically guides the character toward the next platform.
+
+The player must:
+
+- choose the correct position;
+- control horizontal movement;
+- time the jump;
+- adjust trajectory;
+- avoid falling hazards;
+- decide whether collecting an item is worth the risk.
 
 ---
 
-## Mode Selection Menu
+## Mobile / Tablet Controls
 
-The main menu is built with real HTML/CSS game elements rather than using concept art as a static background.
+Mobile gameplay is designed for **landscape orientation**.
 
-It provides two cards:
+### Classic Mode
 
-### Mode 1 — Classic
+- tap the gameplay area to jump.
 
-The original endless-runner challenge focused on timing, jumping and obstacle avoidance.
+### Ascension Mode
 
-### Mode 2 — Ascension
+The game screen itself acts as a touchpad:
 
-A vertical challenge focused on manual movement, alternating platforms, falling hazards, coins, power-ups and checkpoints.
+- **drag left/right** → horizontal movement;
+- **drag up/down** → vertical adjustment / fast fall;
+- **quick tap** → jump;
+- **multi-touch** → steer with one finger and jump with another.
 
-On large screens the cards are displayed side by side. Compact landscape devices use a dedicated reduced layout designed to remain usable even around **568×320**.
+There is no longer a large visible D-pad or side jump button taking up gameplay space.
+
+---
+
+## Falling Hazards
+
+Dangerous blocks fall from the top of the screen.
+
+They:
+
+- spawn above the visible area;
+- use a warning/telegraph before entering;
+- fall at different speeds;
+- disappear after leaving the active gameplay area;
+- become more frequent as the phases progress;
+- can damage or eliminate the player.
+
+The spawn logic is designed to avoid unfair situations where every available route is blocked at the same time.
+
+---
+
+## Checkpoints and Phases
+
+Each Ascension phase ends with a checkpoint.
+
+When reached:
+
+1. gameplay pauses briefly;
+2. the game shows checkpoint feedback;
+3. a score bonus is awarded;
+4. the phase increases;
+5. the next route is generated;
+6. difficulty increases.
+
+The score is **not reset** between phases.
+
+Later phases progressively increase:
+
+- hazard speed;
+- hazard frequency;
+- route pressure;
+- movement difficulty;
+- overall pace.
+
+---
+
+## Ascension Power-ups
+
+### Shield
+
+Absorbs one collision.
+
+### Slow Time
+
+Temporarily reduces hazard speed.
+
+### ×2 Score
+
+Temporarily doubles score gains.
+
+### Second Chance
+
+Returns the player to the last safe platform with a brief invulnerability period.
+
+---
+
+## Scoring
+
+Ascension Mode uses its own score system based on:
+
+- vertical progress;
+- survival;
+- collected energy / coins;
+- checkpoints;
+- phase bonuses.
+
+Classic Mode and Ascension Mode keep separate high scores.
+
+---
+
+## Local Storage
+
+The project uses `localStorage` only — no backend is required.
+
+Stored data includes:
+
+- Classic Mode high score;
+- Ascension Mode high score;
+- audio preference.
+
+The game also keeps compatibility with the older Classic Mode high-score key so previous progress is not lost.
 
 ---
 
 ## Mobile Orientation Gate
 
-The mobile experience preserves the landscape system introduced in V2.2.
+The mobile experience remains landscape-first.
 
-1. A smartphone opened in portrait displays the animated **Play in landscape** gate.
-2. On the first valid interaction, fullscreen is requested when supported.
-3. `screen.orientation.lock("landscape")` is requested when available.
-4. If the browser blocks automatic rotation, the user can rotate the phone manually.
-5. Landscape orientation unlocks the mode-selection menu.
-6. Returning to portrait during gameplay pauses the game and restores the gate.
-7. Returning to landscape resumes the game.
+When a smartphone opens the game in portrait:
 
-The implementation also uses `VisualViewport`, safe-area insets, dynamic viewport sizing and pointer/touch detection rather than relying exclusively on `userAgent`.
+1. the animated **Play in landscape** screen is shown;
+2. fullscreen is requested when allowed by the browser;
+3. `screen.orientation.lock("landscape")` is requested when supported;
+4. if orientation lock is blocked, the player can rotate the device manually;
+5. landscape unlocks the game menu;
+6. returning to portrait during gameplay pauses the game;
+7. returning to landscape resumes the experience.
 
-> Browser restrictions still apply. Safari/iOS may require the device to be rotated manually.
+The orientation system also uses:
+
+- `VisualViewport`;
+- safe-area handling;
+- pointer/touch detection;
+- `resize`;
+- `orientationchange`;
+- fullscreen events.
 
 ---
 
 ## Responsive Design
 
-The gameplay keeps a logical resolution of **1200 × 600**, while the interface scales around that logical game space instead of changing Classic Mode physics.
+The logical gameplay resolution remains:
 
-Responsive techniques include:
+```text
+1200 × 600
+```
 
-- `aspect-ratio`;
-- CSS Grid and Flexbox;
-- `clamp()`;
-- dynamic viewport units;
-- `VisualViewport`;
-- `env(safe-area-inset-*)`;
-- dedicated compact-landscape layouts.
+The presentation scales without changing Classic Mode physics.
 
-### Tested viewport targets
+The project was designed around responsive layouts for:
 
 ```text
 Portrait mobile
@@ -264,25 +375,20 @@ Desktop
 1366×768
 1440×900
 1920×1080
-2560×1080 (ultrawide)
+
+Ultrawide
+2560×1080
 ```
 
----
-
-## Local Progress
-
-The project uses `localStorage` and does not require a backend.
-
-- Classic Mode high score: `jdp-v31-classic-best`
-- Ascension Mode high score: `jdp-v31-ascension-best`
-- Legacy Classic high score migration: `jdp-v2-best`
-- Audio preference remains compatible with the V2.2 implementation.
+Mobile landscape behavior also includes tuning for approximately **19.5:9 / 20:9** screens.
 
 ---
 
 ## Game State and Mode Switching
 
-The project uses a single main `requestAnimationFrame` loop.
+The game uses a single main `requestAnimationFrame` loop.
+
+Switching between modes clears the previous game state before loading the next one.
 
 Supported flows include:
 
@@ -291,7 +397,13 @@ Menu → Classic → Menu → Ascension
 Menu → Ascension → Menu → Classic
 ```
 
-Changing modes clears gameplay entities and temporary state before loading the next mode, preventing duplicated loops, hazards or input handlers in the background.
+This prevents:
+
+- duplicate game loops;
+- duplicated hazards;
+- duplicated audio;
+- leftover inputs;
+- score leaking between modes.
 
 ---
 
@@ -304,13 +416,127 @@ Both modes support:
 - return to menu;
 - restart after Game Over.
 
-Ascension Mode also reports stage progress, collected coins and reached checkpoints.
+Ascension Game Over also reports:
+
+- score;
+- phase reached;
+- collected items;
+- checkpoints reached.
+
+---
+
+# Version History
+
+## First Version
+
+The original game was a very small browser-based jumping prototype.
+
+It established the basic concept of:
+
+- a simple character;
+- a ground line;
+- jumping over obstacles;
+- lightweight HTML/CSS/JavaScript gameplay.
+
+This early version is shown in the **First Version** screenshot above.
+
+---
+
+## V2.2 — Visual and Mobile Foundation
+
+V2.2 became the main visual foundation of the current project.
+
+It introduced or refined:
+
+- the current purple character;
+- animated legs;
+- a more expressive movement style;
+- the purple/pink atmospheric environment;
+- better HUD presentation;
+- richer background depth;
+- mobile landscape support;
+- the Orientation Gate;
+- touchscreen support;
+- PWA configuration.
+
+The later versions intentionally preserve this identity.
+
+---
+
+## V3.1 — Two Modes
+
+Introduced:
+
+- the game-mode selection menu;
+- Classic Mode integration;
+- Ascension Mode;
+- independent high scores;
+- return-to-menu flow;
+- checkpoint progression.
+
+---
+
+## V3.2 — Skill Ascension
+
+Changed Ascension into a more skill-based mode:
+
+- removed automatic horizontal assistance;
+- added manual `WASD` / arrow controls;
+- kept `Space` as the jump command;
+- added air control;
+- added fast fall;
+- spread coins and power-ups across riskier routes;
+- introduced mobile directional controls.
+
+---
+
+## V3.3 — Directional Ascension
+
+Improved movement readability and platform progression:
+
+- real left/right character facing;
+- body tilt based on movement;
+- leg animation based on velocity;
+- narrower side platforms;
+- left → right → left procedural route;
+- valid-platform progression rules;
+- camera progress based on successful landings;
+- removal of vertical shortcut completion;
+- riskier collectible placement.
+
+---
+
+## V3.4 — Zigzag Ascension
+
+Refined the Ascension route:
+
+- mandatory side-to-side progression;
+- future platforms cannot be used as shortcuts;
+- completed platforms remain available as recovery points;
+- horizontal jump range and platform width were recalibrated;
+- checkpoints require the correct zigzag route;
+- the Classic Mode visuals and character remain based on V2.2.
+
+---
+
+## V3.5 — Mobile Touchpad
+
+V3.5 focuses on mobile usability.
+
+- removed the dedicated mobile D-pad / side control panel;
+- gameplay area now works as the control surface;
+- drag left/right to move;
+- vertical drag provides `W/S`-style adjustment;
+- quick tap jumps;
+- multi-touch allows steering and jumping simultaneously;
+- Classic Mode supports tap-anywhere jumping;
+- improved landscape use on 19.5:9 and 20:9 phones;
+- more screen space is dedicated to gameplay;
+- desktop keyboard controls remain unchanged.
 
 ---
 
 ## Project Structure
-
-The GitHub-ready version keeps only `index.html` and `README.md` in the repository root. Everything else lives inside `assets/`.
 
 ```text
 Jogo-De-Pular/
@@ -339,7 +565,17 @@ Jogo-De-Pular/
 
 No installation or build process is required.
 
-You can open `index.html` directly in a modern browser, but running a local HTTP server is recommended for fullscreen, PWA and orientation APIs.
+### Open directly
+
+Open:
+
+```text
+index.html
+```
+
+in a modern browser.
+
+### Recommended local HTTP server
 
 ```bash
 python3 -m http.server 8000
@@ -351,23 +587,29 @@ Then open:
 http://localhost:8000
 ```
 
+Using a local HTTP server is recommended when testing fullscreen, PWA and orientation APIs.
+
 ---
 
 ## GitHub Pages
 
-1. Replace the repository files with this version.
-2. Commit and push your changes.
-3. Open **Settings → Pages**.
-4. Publish the repository root from the desired branch.
-5. Wait for deployment to finish.
+The project is fully static and can be hosted directly on GitHub Pages.
 
-All project paths are relative, so the game remains compatible with GitHub Pages project subdirectories.
+Recommended configuration:
+
+```text
+Source: Deploy from a branch
+Branch: master
+Folder: / (root)
+```
+
+The project uses relative paths, so it can be published under the repository path without requiring a backend.
 
 ---
 
 ## Manifest / PWA
 
-`assets/manifest.webmanifest` keeps the game configured for fullscreen landscape use:
+The web manifest keeps the game optimized for landscape play:
 
 ```json
 {
@@ -376,68 +618,7 @@ All project paths are relative, so the game remains compatible with GitHub Pages
 }
 ```
 
-Orientation locking still depends on browser and operating-system support.
-
----
-
-## Version Evolution
-
-### V1 — First Prototype
-
-The project started as a small experimental jumping prototype with a basic play area and the first foundation for player movement.
-
-### V2.2 — Mobile Landscape Foundation
-
-V2.2 established the modern identity of the game:
-
-- animated purple character;
-- animated legs;
-- richer scenery;
-- Classic Mode gameplay;
-- short/high jumps;
-- mobile landscape experience;
-- touch controls;
-- Orientation Gate;
-- PWA support.
-
-### V3.1 — Preserve & Ascend
-
-- introduced the two-mode architecture;
-- added the mode-selection menu;
-- added the initial Ascension Mode while deliberately preserving Classic Mode's V2.2 visual identity.
-
-### V3.2 — Skill Ascension
-
-- removed automatic horizontal assistance;
-- added manual `WASD` / arrow controls;
-- kept Space as the dedicated jump command;
-- added horizontal ground and air control;
-- added `W` airborne adjustment and `S` fast fall/drop;
-- spread coins and power-ups across riskier routes;
-- added a mobile D-pad for Ascension Mode.
-
-### V3.3 — Directional Ascension
-
-- added real character facing based on movement direction;
-- added body lean and movement-driven leg animation;
-- removed the visual "moonwalk" effect;
-- narrowed platforms and anchored them to the arena walls;
-- changed progress from raw height to valid platform landings;
-- moved collectibles further into the cross-arena route;
-- improved air-control responsiveness.
-
-### V3.4 — Zigzag Ascension
-
-V3.4 focuses on making Ascension Mode a real alternating traversal challenge:
-
-- platforms remain anchored to the left and right walls;
-- the route alternates **left ↔ right**;
-- only the expected next platform advances progression;
-- future platforms cannot be used as premature vertical shortcuts;
-- completed platforms remain available as recovery points;
-- horizontal range and platform spacing were recalibrated for fair cross-arena jumps;
-- checkpoint progression requires the correct zigzag route;
-- the animated V2.2 character, Classic Mode scenery and original visual direction remain preserved.
+Browser restrictions still apply to forced orientation. On iOS/Safari, the player may need to rotate the device manually.
 
 ---
 
@@ -453,21 +634,36 @@ V3.4 focuses on making Ascension Mode a real alternating traversal challenge:
 - Visual Viewport API
 - Progressive Web App manifest
 
-No frameworks, npm packages, backend services or paid APIs are required.
+No framework, package manager, backend or external API is required.
 
 ---
 
 ## Browser Compatibility
 
-Use a current version of Chrome, Brave, Edge, Firefox or Safari.
+Use current versions of:
 
-- **Desktop:** keyboard/mouse, no Orientation Gate.
-- **Android:** fullscreen and landscape lock are requested when supported.
-- **iPhone/iPad/Safari:** manual rotation may still be required.
-- **Installed PWA:** the manifest requests landscape/fullscreen presentation.
+- Chrome
+- Brave
+- Edge
+- Firefox
+- Safari
+
+### Desktop
+
+Keyboard controls work normally and no Orientation Gate is shown.
+
+### Android
+
+Fullscreen and landscape lock are requested when supported by the browser.
+
+### iPhone / iPad / Safari
+
+Manual device rotation may still be required due to browser limitations.
 
 ---
 
 ## License
 
-This repository currently does not declare a license. Add one before redistributing the project under explicit terms or accepting external contributions.
+This repository currently does not declare a license.
+
+Add a license before redistributing the project under explicit terms or accepting external contributions.
