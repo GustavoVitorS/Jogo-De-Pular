@@ -53,19 +53,13 @@
     recordBanner: document.querySelector("#newRecordBanner"),
     status: document.querySelector("#gameStatus"),
     gameFrame: document.querySelector("#gameFrame"),
-    touchControls: document.querySelector("#touchControls"),
+    mobileGameControls: document.querySelector("#mobileGameControls"),
+    virtualJoystick: document.querySelector("#virtualJoystick"),
+    joystickThumb: document.querySelector("#joystickThumb"),
     jumpButton: document.querySelector("#jumpButton"),
-    movementPad: document.querySelector("#movementPad"),
-    moveUpButton: document.querySelector("#moveUpButton"),
-    moveLeftButton: document.querySelector("#moveLeftButton"),
-    moveRightButton: document.querySelector("#moveRightButton"),
-    moveDownButton: document.querySelector("#moveDownButton"),
     controlHint: document.querySelector("#controlHint"),
     touchStartHint: document.querySelector("#touchStartHint"),
     touchRetryHint: document.querySelector("#touchRetryHint"),
-    touchGestureHint: document.querySelector("#touchGestureHint"),
-    touchGestureHintText: document.querySelector("#touchGestureHintText"),
-    touchPadFeedback: document.querySelector("#touchPadFeedback"),
     orientationGate: document.querySelector("#orientationGate"),
     landscapeButton: document.querySelector("#landscapeButton"),
     orientationText: document.querySelector("#orientationText"),
@@ -88,6 +82,7 @@
     maximumPixelRatio: 1.4,
     maximumLargeScreenPixelRatio: 1.25,
     maximumParticles: 120,
+    mobileMaximumParticles: 52,
     gravity: 2700,
     jumpForce: 1000,
     heldJumpGravity: 0.54,
@@ -271,9 +266,16 @@
   let ascProgressSide = "left";
   let ascCameraScrollRemaining = 0;
   const ascMoveInput = { up: false, down: false, left: false, right: false };
-  const activeMovePointers = new Map();
-  const touchSurfacePointers = new Map();
-  let touchMovePointerId = null;
+  let joystickPointerId = null;
+  let classicPointerId = null;
+  let joystickCenterX = 0;
+  let joystickCenterY = 0;
+  let joystickRadius = 42;
+  let joystickVisualX = 0;
+  let joystickVisualY = 0;
+  let mobileLowQuality = false;
+  let mobileHeavyFrames = 0;
+  let mobileLightFrames = 0;
   let ascTouchAxis = 0;
   let ascTouchVerticalAxis = 0;
 
@@ -285,23 +287,31 @@
 
   const interfaceCache = Object.create(null);
 
+  function resetJoystick() {
+    joystickPointerId = null;
+    ascTouchAxis = 0;
+    ascTouchVerticalAxis = 0;
+    joystickVisualX = 0;
+    joystickVisualY = 0;
+    ui.virtualJoystick.classList.remove("is-active");
+    ui.joystickThumb.style.transform = "translate3d(0px, 0px, 0)";
+  }
+
   function clearAscensionMovement() {
     ascMoveInput.up = false;
     ascMoveInput.down = false;
     ascMoveInput.left = false;
     ascMoveInput.right = false;
-    ascTouchAxis = 0;
-    ascTouchVerticalAxis = 0;
-    touchMovePointerId = null;
-    activeMovePointers.clear();
-    touchSurfacePointers.clear();
-    if (ui.touchPadFeedback) {
-      ui.touchPadFeedback.classList.add("is-app-hidden");
-      ui.touchPadFeedback.classList.remove("is-active", "is-tap");
-    }
-    [ui.moveUpButton, ui.moveLeftButton, ui.moveRightButton, ui.moveDownButton].forEach((button) => {
-      button?.classList.remove("is-pressed");
-    });
+    resetJoystick();
+    classicPointerId = null;
+  }
+
+  function syncMobileControls() {
+    const show = mobileLayout && !isPortraitViewport() && Boolean(activeMode)
+      && (gameState === "running" || gameState === "menu" || gameState === "gameover");
+    ui.mobileGameControls.classList.toggle("is-app-hidden", !show);
+    ui.virtualJoystick.classList.toggle("is-app-hidden", activeMode !== "ascension");
+    if (!show) resetJoystick();
   }
 
   function setAscensionMoveDirection(direction, pressed) {
@@ -567,8 +577,15 @@
 
   function syncVisualViewport() {
     const viewport = getVisualViewportSize();
-    document.documentElement.style.setProperty("--game-vw", `${viewport.width}px`);
-    document.documentElement.style.setProperty("--game-vh", `${viewport.height}px`);
+    // Avoid viewport CSS writes on every orientation/scroll event unless the
+    // dimensions actually change. Repeated writes were provoking mobile reflow.
+    if (Math.abs(viewport.width - (syncVisualViewport.cachedWidth || 0)) >= 1 ||
+        Math.abs(viewport.height - (syncVisualViewport.cachedHeight || 0)) >= 1) {
+      syncVisualViewport.cachedWidth = viewport.width;
+      syncVisualViewport.cachedHeight = viewport.height;
+      document.documentElement.style.setProperty("--game-vw", `${viewport.width}px`);
+      document.documentElement.style.setProperty("--game-vh", `${viewport.height}px`);
+    }
     return viewport;
   }
 
@@ -637,12 +654,7 @@
     document.body.classList.toggle("is-mobile", mobileLayout);
     document.body.classList.toggle("is-portrait", portrait);
     document.body.classList.toggle("is-landscape", mobileLayout && !portrait);
-    ui.touchControls.classList.add("is-app-hidden");
-    if (ui.touchGestureHint) {
-      const showTouchHint = Boolean(activeMode) && mobileLayout && !portrait;
-      ui.touchGestureHint.classList.toggle("is-app-hidden", !showTouchHint);
-      ui.touchGestureHint.setAttribute("aria-hidden", String(!showTouchHint));
-    }
+    syncMobileControls();
 
     ui.orientationGate.classList.toggle("is-hidden", !portrait);
     ui.orientationGate.setAttribute("aria-hidden", String(!portrait));
@@ -720,19 +732,18 @@
       : bounds.width >= 1000
         ? CONFIG.maximumLargeScreenPixelRatio
         : CONFIG.maximumPixelRatio;
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, ratioLimit);
+    const pixelRatio = mobileLayout ? 1 : Math.min(window.devicePixelRatio || 1, ratioLimit);
     const width = Math.max(1, Math.round(bounds.width * pixelRatio));
     const height = Math.max(1, Math.round(bounds.height * pixelRatio));
 
-    if (canvas.width !== width || canvas.height !== height) {
+    if (!renderCache.groundGradient || canvas.width !== width || canvas.height !== height) {
       canvas.width = width;
       canvas.height = height;
+      canvasScaleX = canvas.width / WORLD.width;
+      canvasScaleY = canvas.height / WORLD.height;
+      rebuildRenderCache();
+      forceNextFrame = true;
     }
-
-    canvasScaleX = canvas.width / WORLD.width;
-    canvasScaleY = canvas.height / WORLD.height;
-    rebuildRenderCache();
-    forceNextFrame = true;
   }
 
   function scheduleLayoutSync(delay = 0) {
@@ -1172,8 +1183,9 @@
   }
 
   function createParticle(x, y, options = {}) {
-    if (particleList.length >= CONFIG.maximumParticles) {
-      particleList.splice(0, particleList.length - CONFIG.maximumParticles + 1);
+    const limit = mobileLayout ? CONFIG.mobileMaximumParticles : CONFIG.maximumParticles;
+    if (particleList.length >= limit) {
+      particleList.splice(0, particleList.length - limit + 1);
     }
     const speed = options.speed ?? 100;
     const angle = options.groundOnly
@@ -1194,7 +1206,7 @@
   }
 
   function emitBurst(x, y, count, color, speed, life, groundOnly = false) {
-    for (let index = 0; index < count; index += 1) {
+    for (let index = 0; index < (mobileLayout ? Math.ceil(count * 0.55) : count); index += 1) {
       createParticle(x, y, { color, speed, life: randomRange(life * 0.65, life), groundOnly });
     }
   }
@@ -1678,12 +1690,10 @@
     ui.checkpointOverlay.classList.remove("is-visible");
     ui.modeMenu.classList.remove("is-app-hidden");
     ui.gameFrame.classList.add("is-app-hidden");
-    ui.touchControls.classList.add("is-app-hidden");
-    ui.touchGestureHint?.classList.add("is-app-hidden");
     ui.gameFooter.classList.add("is-app-hidden");
     document.body.classList.add("is-main-menu");
     document.body.classList.remove("is-ascension-mode");
-    ui.brandEyebrow.textContent = "Arcade • V3.5";
+    ui.brandEyebrow.textContent = "Arcade • V3.6";
     ui.tagline.textContent = "O mesmo ritmo da V2.2, agora com dois desafios.";
     resetInterfaceCache();
     updateInterface(true);
@@ -1706,7 +1716,6 @@
       if (ui.controlHint) ui.controlHint.innerHTML = '<kbd>ESPAÇO</kbd> salto curto / alto • mobile: toque na tela';
       if (ui.touchStartHint) ui.touchStartHint.innerHTML = 'Toque <strong>na tela</strong> para começar';
       if (ui.touchRetryHint) ui.touchRetryHint.innerHTML = 'Toque <strong>na tela</strong> para tentar novamente';
-      if (ui.touchGestureHintText) ui.touchGestureHintText.textContent = 'Toque na tela para pular';
     } else {
       ui.brandEyebrow.textContent = "Vertical arcade • Modo 2";
       ui.tagline.textContent = "Suba, desvie e alcance o próximo checkpoint.";
@@ -1717,11 +1726,10 @@
       ui.startBestLabel.textContent = "Melhor ascensão";
       ui.gameOverDetails.hidden = true;
       ui.gameFrame.setAttribute("aria-label", "Área do Modo Ascensão do Jogo de Pular");
-      canvas.setAttribute("aria-label", "Modo Ascensão. Use WASD para se mover e Espaço para pular. No celular, arraste o dedo horizontalmente para mover e toque na tela para pular.");
-      if (ui.controlHint) ui.controlHint.innerHTML = '<kbd>WASD</kbd> mover • <kbd>ESPAÇO</kbd> pular • mobile: arraste + toque';
-      if (ui.touchStartHint) ui.touchStartHint.innerHTML = '<strong>Arraste</strong> para mover • <strong>toque</strong> para começar';
-      if (ui.touchRetryHint) ui.touchRetryHint.innerHTML = '<strong>Arraste</strong> para mover • <strong>toque</strong> para tentar novamente';
-      if (ui.touchGestureHintText) ui.touchGestureHintText.textContent = 'Arraste ↔ para mover • toque para pular';
+      canvas.setAttribute("aria-label", "Modo Ascensão. Use WASD para se mover e Espaço para pular. No celular, use o joystick e o botão de pulo.");
+      if (ui.controlHint) ui.controlHint.innerHTML = '<kbd>WASD</kbd> mover • <kbd>ESPAÇO</kbd> pular • mobile: joystick + botão';
+      if (ui.touchStartHint) ui.touchStartHint.innerHTML = 'Use o botão <strong>PULAR</strong> para começar';
+      if (ui.touchRetryHint) ui.touchRetryHint.innerHTML = 'Toque em <strong>PULAR</strong> para tentar novamente';
     }
   }
 
@@ -1734,7 +1742,6 @@
     ui.modeMenu.classList.add("is-app-hidden");
     ui.gameFrame.classList.remove("is-app-hidden");
     ui.gameFooter.classList.remove("is-app-hidden");
-    ui.touchControls.classList.add("is-app-hidden");
     bestScore = mode === "classic" ? classicBestScore : ascensionBestScore;
     configureModeCopy(mode);
     currentPower = null;
@@ -2445,9 +2452,21 @@
   }
 
   function getFrameInterval() {
-    if (gameState === "running" || gameState === "checkpoint") return 1000 / CONFIG.activeFrameRate;
+    if (gameState === "running" || gameState === "checkpoint") return 1000 / (mobileLayout && mobileLowQuality ? 30 : CONFIG.activeFrameRate);
     if (gameState === "paused" || gameState === "menu-root") return 1000 / CONFIG.pausedFrameRate;
     return 1000 / CONFIG.idleFrameRate;
+  }
+
+  let lastControlsVisible = null;
+  let lastControlsMode = null;
+  function syncMobileControlsOnChange() {
+    const visible = mobileLayout && !isPortraitViewport() && activeMode
+      && (gameState === "running" || gameState === "menu" || gameState === "gameover");
+    if (lastControlsVisible !== Boolean(visible) || lastControlsMode !== activeMode) {
+      lastControlsVisible = Boolean(visible);
+      lastControlsMode = activeMode;
+      syncMobileControls();
+    }
   }
 
   function frame(timestamp) {
@@ -2497,6 +2516,16 @@
 
     if (activeMode) drawScene();
     updateInterface();
+    syncMobileControlsOnChange();
+    // On lower-powered phones, switch to 30 fps only if rendering is
+    // consistently expensive; keep fixed physics at 60 Hz and recover at 60.
+    if (mobileLayout && gameState === "running") {
+      const renderCost = performance.now() - timestamp;
+      if (renderCost > 20) { mobileHeavyFrames++; mobileLightFrames = 0; }
+      else if (renderCost < 10) { mobileLightFrames++; mobileHeavyFrames = Math.max(0, mobileHeavyFrames - 1); }
+      if (mobileHeavyFrames >= 14) { mobileLowQuality = true; mobileHeavyFrames = 0; }
+      if (mobileLowQuality && mobileLightFrames >= 240) { mobileLowQuality = false; mobileLightFrames = 0; }
+    }
     window.requestAnimationFrame(frame);
   }
 
@@ -2642,243 +2671,102 @@
   });
 
 
-  const TOUCH_SURFACE = Object.freeze({
-    dragDeadZone: 12,
-    fullSpeedDistance: 88,
-    tapMaxDistance: 15,
-    tapMaxDuration: 420,
-    syntheticJumpHold: 0.14,
-  });
-
-  function isTouchSurfaceTargetBlocked(target) {
-    return Boolean(target?.closest?.("button, a, input, select, textarea, [role='button']"));
-  }
-
-  function resetTouchSurfacePointer(pointerId) {
-    touchSurfacePointers.delete(pointerId);
-    if (touchMovePointerId === pointerId) {
-      touchMovePointerId = null;
-      ascTouchAxis = 0;
-      ascTouchVerticalAxis = 0;
+  // V3.6: dedicated, composited joystick; no DOM measurements or style
+  // layout writes while moving (except a transform on its own thumb).
+  function joystickMove(event) {
+    if (event.pointerId !== joystickPointerId) return;
+    if (event.cancelable) event.preventDefault();
+    const dx = event.clientX - joystickCenterX;
+    const dy = event.clientY - joystickCenterY;
+    const magnitude = Math.hypot(dx, dy);
+    const fraction = Math.min(1, magnitude / joystickRadius);
+    const active = fraction < 0.13 ? 0 : (fraction - 0.13) / 0.87;
+    const norm = magnitude > 0.001 ? 1 / magnitude : 0;
+    ascTouchAxis = clamp(dx * norm * active, -1, 1);
+    ascTouchVerticalAxis = clamp(dy * norm * active, -1, 1);
+    const thumbX = dx * norm * fraction * joystickRadius;
+    const thumbY = dy * norm * fraction * joystickRadius;
+    // One GPU-composited transform; no getBoundingClientRect() on move.
+    if (Math.abs(thumbX - joystickVisualX) > 0.4 || Math.abs(thumbY - joystickVisualY) > 0.4) {
+      joystickVisualX = thumbX;
+      joystickVisualY = thumbY;
+      ui.joystickThumb.style.transform = `translate3d(${thumbX.toFixed(1)}px, ${thumbY.toFixed(1)}px, 0)`;
     }
   }
 
-  function updateTouchPadFeedback(event, dx = 0, dy = 0, visible = true) {
-    if (!ui.touchPadFeedback) return;
-    if (!visible) {
-      ui.touchPadFeedback.classList.add("is-app-hidden");
-      ui.touchPadFeedback.classList.remove("is-active", "is-tap");
-      return;
-    }
-    const bounds = ui.gameFrame.getBoundingClientRect();
-    const x = clamp(event.clientX - bounds.left, 24, Math.max(24, bounds.width - 24));
-    const y = clamp(event.clientY - bounds.top, 24, Math.max(24, bounds.height - 24));
-    const thumbOffsetX = clamp(dx / 4, -14, 14);
-    const thumbOffsetY = clamp(dy / 4, -14, 14);
-    ui.touchPadFeedback.style.left = `${x}px`;
-    ui.touchPadFeedback.style.top = `${y}px`;
-    ui.touchPadFeedback.style.setProperty("--touch-thumb-x", `${thumbOffsetX}px`);
-    ui.touchPadFeedback.style.setProperty("--touch-thumb-y", `${thumbOffsetY}px`);
-    ui.touchPadFeedback.classList.remove("is-app-hidden");
-    ui.touchPadFeedback.classList.add("is-active");
+  ui.virtualJoystick.addEventListener("pointerdown", (event) => {
+    if (!mobileLayout || isPortraitViewport() || activeMode !== "ascension" || joystickPointerId !== null) return;
+    event.preventDefault();
+    joystickPointerId = event.pointerId;
+    const bounds = ui.virtualJoystick.getBoundingClientRect();
+    joystickCenterX = bounds.left + bounds.width / 2;
+    joystickCenterY = bounds.top + bounds.height / 2;
+    joystickRadius = Math.max(18, bounds.width * 0.31);
+    ui.virtualJoystick.classList.add("is-active");
+    try { ui.virtualJoystick.setPointerCapture(event.pointerId); } catch { /* optional */ }
+    joystickMove(event);
+  }, { passive: false });
+  ui.virtualJoystick.addEventListener("pointermove", joystickMove, { passive: false });
+  const endJoystick = (event) => {
+    if (event.pointerId === joystickPointerId) resetJoystick();
+  };
+  for (const eventName of ["pointerup", "pointercancel", "lostpointercapture"]) {
+    ui.virtualJoystick.addEventListener(eventName, endJoystick);
   }
 
-  function triggerScreenTapJump() {
-    if (!mobileLayout || isPortraitViewport() || !activeMode) return;
+  // Classic keeps full-surface tap support. Ascension deliberately relies on
+  // the right-hand jump button so holding joystick and jumping are independent.
+  ui.gameFrame.addEventListener("pointerdown", (event) => {
+    if (!mobileLayout || isPortraitViewport() || activeMode !== "classic" || classicPointerId !== null) return;
+    if (event.pointerType === "mouse" || event.target.closest?.("button, a, [role='button']")) return;
+    if (gameState !== "running" && gameState !== "menu" && gameState !== "gameover") return;
+    event.preventDefault();
+    classicPointerId = event.pointerId;
+    try { ui.gameFrame.setPointerCapture(event.pointerId); } catch { /* optional */ }
     audio.ensureContext();
-    requestLandscapeExperience({ silent: true }).catch(() => {});
-
-    if (gameState === "menu" || gameState === "gameover") {
-      startGame();
-      return;
-    }
-    if (gameState !== "running") return;
-
     spaceIsDown = true;
-    requestJump();
-    window.setTimeout(() => {
+    if (gameState === "menu" || gameState === "gameover") startGame();
+    else requestJump();
+  }, { passive: false });
+  for (const eventName of ["pointerup", "pointercancel", "lostpointercapture"]) {
+    ui.gameFrame.addEventListener(eventName, (event) => {
+      if (event.pointerId !== classicPointerId) return;
+      classicPointerId = null;
       spaceIsDown = false;
       releaseJump();
-    }, TOUCH_SURFACE.syntheticJumpHold * 1000);
+    }, { passive: false });
   }
-
-  function beginTouchSurfaceGesture(event) {
-    if (!mobileLayout || isPortraitViewport() || !activeMode) return;
-    if (event.pointerType === "mouse" || isTouchSurfaceTargetBlocked(event.target)) return;
-    event.preventDefault();
-    audio.ensureContext();
-    requestLandscapeExperience({ silent: true }).catch(() => {});
-
-    touchSurfacePointers.set(event.pointerId, {
-      startX: event.clientX,
-      startY: event.clientY,
-      lastX: event.clientX,
-      lastY: event.clientY,
-      startedAt: performance.now(),
-      dragging: false,
-    });
-
-    updateTouchPadFeedback(event, 0, 0, true);
-
-    if (typeof ui.gameFrame.setPointerCapture === "function") {
-      try { ui.gameFrame.setPointerCapture(event.pointerId); } catch { /* optional */ }
-    }
-  }
-
-  function moveTouchSurfaceGesture(event) {
-    const gesture = touchSurfacePointers.get(event.pointerId);
-    if (!gesture || !mobileLayout || isPortraitViewport()) return;
-    if (event.cancelable) event.preventDefault();
-
-    gesture.lastX = event.clientX;
-    gesture.lastY = event.clientY;
-    const dx = event.clientX - gesture.startX;
-    const dy = event.clientY - gesture.startY;
-    const distance = Math.hypot(dx, dy);
-
-    if (!gesture.dragging && distance >= TOUCH_SURFACE.dragDeadZone) {
-      gesture.dragging = true;
-      if (touchMovePointerId === null || touchMovePointerId === event.pointerId) touchMovePointerId = event.pointerId;
-    }
-
-    if (activeMode === "ascension" && gesture.dragging && touchMovePointerId === event.pointerId) {
-      const horizontalDominant = Math.abs(dx) >= Math.abs(dy) * 0.72;
-      const verticalDominant = Math.abs(dy) > Math.abs(dx) * 1.12;
-
-      ascTouchAxis = horizontalDominant
-        ? clamp(dx / TOUCH_SURFACE.fullSpeedDistance, -1, 1)
-        : 0;
-      ascTouchVerticalAxis = verticalDominant
-        ? clamp(dy / TOUCH_SURFACE.fullSpeedDistance, -1, 1)
-        : 0;
-
-      if (Math.abs(ascTouchAxis) < 0.08) ascTouchAxis = 0;
-      if (Math.abs(ascTouchVerticalAxis) < 0.12) ascTouchVerticalAxis = 0;
-      updateTouchPadFeedback(event, dx, dy, true);
-    }
-  }
-
-  function endTouchSurfaceGesture(event) {
-    const gesture = touchSurfacePointers.get(event.pointerId);
-    if (!gesture) return;
-    if (event.cancelable) event.preventDefault();
-
-    const elapsed = performance.now() - gesture.startedAt;
-    const distance = Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY);
-    const wasMovementPointer = touchMovePointerId === event.pointerId;
-    const isTap = !gesture.dragging && distance <= TOUCH_SURFACE.tapMaxDistance && elapsed <= TOUCH_SURFACE.tapMaxDuration;
-
-    resetTouchSurfacePointer(event.pointerId);
-    if (wasMovementPointer) {
-      ascTouchAxis = 0;
-      ascTouchVerticalAxis = 0;
-    }
-    if (isTap && ui.touchPadFeedback) {
-      ui.touchPadFeedback.classList.add("is-tap");
-      window.setTimeout(() => updateTouchPadFeedback(event, 0, 0, false), 120);
-      triggerScreenTapJump();
-    } else {
-      updateTouchPadFeedback(event, 0, 0, false);
-    }
-  }
-
-  ui.gameFrame.addEventListener("pointerdown", beginTouchSurfaceGesture, { passive: false });
-  ui.gameFrame.addEventListener("pointermove", moveTouchSurfaceGesture, { passive: false });
-  ui.gameFrame.addEventListener("pointerup", endTouchSurfaceGesture, { passive: false });
-  ui.gameFrame.addEventListener("pointercancel", endTouchSurfaceGesture, { passive: false });
-  ui.gameFrame.addEventListener("lostpointercapture", (event) => {
-    resetTouchSurfacePointer(event.pointerId);
-    if (touchSurfacePointers.size === 0) updateTouchPadFeedback(event, 0, 0, false);
-  });
   ui.gameFrame.addEventListener("contextmenu", (event) => {
     if (mobileLayout) event.preventDefault();
   });
 
-  // The first real touch is the earliest standards-compliant opportunity to
-  // enter fullscreen and lock orientation on most Android browsers.
-  document.addEventListener(
-    "pointerdown",
-    (event) => {
-      if (firstMobileGestureHandled || !isTouchMobileLayout()) return;
-      if (event.target.closest?.("#landscapeButton")) return;
-      firstMobileGestureHandled = true;
-      requestLandscapeExperience().catch(() => {});
-    },
-    { capture: true, passive: true },
-  );
-
-  const mobileMoveButtons = [
-    [ui.moveUpButton, "up"],
-    [ui.moveLeftButton, "left"],
-    [ui.moveRightButton, "right"],
-    [ui.moveDownButton, "down"],
-  ];
-
-  mobileMoveButtons.forEach(([button, direction]) => {
-    if (!button) return;
-    button.addEventListener("pointerdown", (event) => {
-      if (activeMode !== "ascension" || !mobileLayout || isPortraitViewport()) return;
-      event.preventDefault();
-      audio.ensureContext();
-      requestLandscapeExperience({ silent: true }).catch(() => {});
-      activeMovePointers.set(event.pointerId, direction);
-      setAscensionMoveDirection(direction, true);
-      button.classList.add("is-pressed");
-      if (typeof button.setPointerCapture === "function") {
-        try { button.setPointerCapture(event.pointerId); } catch { /* optional */ }
-      }
-    });
-
-    const releaseMove = (event) => {
-      const heldDirection = activeMovePointers.get(event.pointerId);
-      if (heldDirection !== direction) return;
-      activeMovePointers.delete(event.pointerId);
-      setAscensionMoveDirection(direction, false);
-      button.classList.remove("is-pressed");
-    };
-
-    button.addEventListener("pointerup", releaseMove);
-    button.addEventListener("pointercancel", releaseMove);
-    button.addEventListener("lostpointercapture", releaseMove);
-    button.addEventListener("contextmenu", (event) => event.preventDefault());
-  });
+  // A website cannot force rotation before activation on many browsers.
+  // Retry fullscreen + Screen Orientation lock on the first real touch.
+  document.addEventListener("pointerdown", (event) => {
+    if (firstMobileGestureHandled || !isTouchMobileLayout()) return;
+    firstMobileGestureHandled = true;
+    requestLandscapeExperience({ silent: true }).catch(() => {});
+  }, { capture: true, passive: true });
 
   ui.jumpButton.addEventListener("pointerdown", (event) => {
-    if (!mobileLayout || isPortraitViewport()) return;
+    if (!mobileLayout || isPortraitViewport() || activeJumpPointerId !== null) return;
     event.preventDefault();
     audio.ensureContext();
-    requestLandscapeExperience({ silent: true }).catch(() => {});
-
     activeJumpPointerId = event.pointerId;
-    if (typeof ui.jumpButton.setPointerCapture === "function") {
-      try {
-        ui.jumpButton.setPointerCapture(event.pointerId);
-      } catch {
-        // Pointer capture is an enhancement, not a requirement.
-      }
-    }
-
+    try { ui.jumpButton.setPointerCapture(event.pointerId); } catch { /* optional */ }
     ui.jumpButton.classList.add("is-pressed");
     spaceIsDown = true;
-
-    if (gameState === "menu" || gameState === "gameover") {
-      startGame();
-    } else if (gameState === "running") {
-      requestJump();
-    }
-  });
-
-  const endTouchJump = (event) => {
-    if (activeJumpPointerId !== null && event.pointerId !== activeJumpPointerId) return;
-    if (event.cancelable) event.preventDefault();
+    if (gameState === "menu" || gameState === "gameover") startGame();
+    else if (gameState === "running") requestJump();
+  }, { passive: false });
+  const endMobileJump = (event) => {
+    if (event.pointerId !== activeJumpPointerId) return;
     releaseMobileJump();
   };
-
-  ui.jumpButton.addEventListener("pointerup", endTouchJump);
-  ui.jumpButton.addEventListener("pointercancel", endTouchJump);
-  ui.jumpButton.addEventListener("lostpointercapture", endTouchJump);
+  for (const eventName of ["pointerup", "pointercancel", "lostpointercapture"]) {
+    ui.jumpButton.addEventListener(eventName, endMobileJump);
+  }
   ui.jumpButton.addEventListener("contextmenu", (event) => event.preventDefault());
-
 
   ui.playClassicButton.addEventListener("click", () => {
     audio.ensureContext();
@@ -2991,6 +2879,13 @@
   updateMobileExperience();
   showModeMenu();
   resizeCanvas();
+  // Best-effort automatic landscape attempt; requires a gesture/fullscreen on
+  // most Android browsers, where the first touch handler above retries it.
+  if (mobileLayout && isPortraitViewport() && screen.orientation?.lock) {
+    // On-page-load orientation lock works only in some PWAs/browsers. Avoid
+    // starting a fullscreen request that would mask the first valid gesture.
+    Promise.resolve().then(() => screen.orientation.lock("landscape")).catch(() => {});
+  }
 
   window.requestAnimationFrame(frame);
 })();

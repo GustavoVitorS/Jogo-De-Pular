@@ -1,8 +1,8 @@
-# Jogo de Pular — V3.5 Mobile Touchpad
+# Jogo de Pular — V3.6 Optimized Mobile Joystick
 
 A lightweight arcade game built with **HTML, CSS and Vanilla JavaScript**, now featuring two distinct game modes while preserving the visual identity, animated character, and movement style established in the V2.2 version.
 
-Version **V3.5** keeps the zigzag Ascension gameplay introduced in V3.4 and significantly improves the mobile experience: on supported mobile devices, the gameplay area itself now works as a **touch surface**, allowing the player to steer by dragging a finger and jump by tapping the screen.
+Version **V3.6** keeps the zigzag Ascension gameplay and V2.2 character while replacing the laggy full-screen touchpad with a **virtual joystick on the left and a dedicated jump button on the right**. The game remains static and compatible with GitHub Pages.
 
 ---
 
@@ -47,43 +47,26 @@ The main goal of the recent versions has been to expand the game **without losin
 
 ---
 
-## What's New in V3.5
+## What's New in V3.6
 
-### Mobile Touchpad Controls
+### Virtual Joystick and Jump Button
 
-The biggest change in V3.5 is the redesigned mobile control system.
+The full-screen dragging interface was replaced by a stable virtual joystick. It uses pointer capture and a GPU-friendly `translate3d` animation for the thumb, rather than recalculating the entire touch overlay for every pointer movement.
 
-The previous mobile side-control panel was removed. The game area itself now acts as the touch controller.
+- **Ascension Mode:** use the left joystick to move in any direction and the right **JUMP** button to jump. Both controls can be held simultaneously.
+- **Classic Mode:** use the right jump button, or tap the gameplay area. Holding supports a higher jump.
+- **Desktop:** `WASD`, arrow keys, and `Space` remain unchanged.
+- Joystick input returns to neutral when released or cancelled.
 
-In **Ascension Mode**:
+### Performance and Landscape Experience
 
-- hold a finger on the gameplay area and **drag left or right** to move the character;
-- horizontal movement intensity follows the distance of the drag;
-- drag mainly upward or downward to reproduce the vertical adjustments used by `W` and `S`;
-- **quickly tap the gameplay area to jump**;
-- multi-touch is supported, so one finger can keep steering while another finger taps to jump.
+- Mobile canvas rendering is capped at a `1×` internal pixel ratio, reducing GPU fill and memory usage while retaining the original logical game coordinates.
+- Reduced mobile particle density and removed expensive blur layers from the active game view.
+- Removed frequent visual touch-feedback repositioning and redundant canvas-gradient regeneration on unchanged resize dimensions.
+- Adaptive rendering drops to 30 FPS only after repeated heavy frames while gameplay physics retains a fixed 60 Hz step.
+- On supported browsers/PWAs, the game requests landscape automatically when possible. A normal browser may **require a user interaction and fullscreen** before orientation lock is allowed; if blocked, the existing animated rotate-phone screen guides manual rotation.
 
-In **Classic Mode**:
-
-- tap the gameplay area to jump;
-- the original short-jump / high-jump gameplay remains preserved.
-
-### Mobile Responsiveness
-
-The mobile layout was recalibrated to use more of the available landscape screen.
-
-This is especially useful on modern 19.5:9 and 20:9 phones such as the **Redmi Note 13**.
-
-The game uses:
-
-- `VisualViewport`;
-- safe-area insets;
-- `100dvh`;
-- responsive CSS Grid / Flexbox;
-- `clamp()`;
-- the original **1200 × 600** logical gameplay ratio.
-
-The dedicated mobile side-control column was removed, giving the game significantly more usable gameplay width.
+Actual performance depends on the device and browser. The Redmi Note 13 is a target layout, but this update does not claim physical-device benchmarking.
 
 ---
 
@@ -212,18 +195,15 @@ Mobile gameplay is designed for **landscape orientation**.
 
 ### Classic Mode
 
-- tap the gameplay area to jump.
+- use **JUMP** or tap the gameplay area to jump; hold for a higher jump.
 
 ### Ascension Mode
 
-The game screen itself acts as a touchpad:
+- Use the **left virtual joystick** to move horizontally and adjust movement vertically.
+- Tap or hold the **right JUMP button** for short or high jumps.
+- Use both thumbs at once: move and jump independently.
 
-- **drag left/right** → horizontal movement;
-- **drag up/down** → vertical adjustment / fast fall;
-- **quick tap** → jump;
-- **multi-touch** → steer with one finger and jump with another.
-
-There is no longer a large visible D-pad or side jump button taking up gameplay space.
+The joystick and jump button are overlaid in translucent mobile controls, without a separate side-column shrinking the gameplay area.
 
 ---
 
@@ -521,7 +501,7 @@ Refined the Ascension route:
 
 ## V3.5 — Mobile Touchpad
 
-V3.5 focuses on mobile usability.
+V3.5 introduced the first full-screen gesture controller, replaced in V3.6 by the dedicated joystick.
 
 - removed the dedicated mobile D-pad / side control panel;
 - gameplay area now works as the control surface;
@@ -533,6 +513,16 @@ V3.5 focuses on mobile usability.
 - improved landscape use on 19.5:9 and 20:9 phones;
 - more screen space is dedicated to gameplay;
 - desktop keyboard controls remain unchanged.
+
+---
+
+## V3.6 — Optimized Mobile Joystick
+
+- Dedicated left joystick with analog direction and right jump button on mobile.
+- No per-pointer layout measurements after starting a gesture.
+- Lower mobile canvas render cost and fewer particles.
+- Automatic landscape request when the browser permits it, with the original orientation gate as fallback.
+- Same Classic visuals, Ascension progression, checkpoints, power-ups and desktop controls.
 
 ---
 

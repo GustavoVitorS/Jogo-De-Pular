@@ -2284,3 +2284,107 @@ body.is-mobile.is-portrait {
 body.is-mobile.is-portrait .page-shell {
   display: none !important;
 }
+
+/* =========================================================
+   V3.6 — Low-overhead mobile joystick + dedicated jump button
+   ========================================================= */
+.mobile-game-controls { display: none; }
+
+body.is-mobile.is-landscape .mobile-game-controls:not(.is-app-hidden) {
+  position: absolute;
+  z-index: 27;
+  inset: auto max(8px, env(safe-area-inset-right)) max(9px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.virtual-joystick {
+  position: relative;
+  width: clamp(90px, 27vh, 112px);
+  height: clamp(90px, 27vh, 112px);
+  border: 2px solid rgba(255, 227, 254, .4);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 48%, rgba(108, 62, 171, .36), rgba(9, 6, 19, .58));
+  box-shadow: 0 0 0 4px rgba(139, 66, 190, .13), inset 0 0 16px rgba(255, 174, 192, .12);
+  touch-action: none;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.virtual-joystick__ring {
+  position: absolute;
+  inset: 31%;
+  border: 1px solid rgba(255, 227, 254, .23);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.virtual-joystick__thumb {
+  position: absolute;
+  width: 44%;
+  height: 44%;
+  top: 28%;
+  left: 28%;
+  border: 1px solid rgba(255, 227, 254, .75);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #e9bbff, #a260e9 62%, #733bbd);
+  box-shadow: inset 0 2px 5px rgba(255,255,255,.35), 0 0 9px rgba(170,46,230,.36);
+  transform: translate3d(0px,0px,0);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.virtual-joystick.is-active { border-color: rgba(255, 174, 192, .86); }
+
+.mobile-jump-button {
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  width: clamp(88px, 26vh, 114px);
+  height: clamp(88px, 26vh, 114px);
+  border: 2px solid rgba(255, 227, 254, .65);
+  border-radius: 50%;
+  background: linear-gradient(155deg, rgba(255, 227, 254, .95), rgba(255, 174, 192, .87));
+  box-shadow: inset 0 2px 6px rgba(255,255,255,.75), 0 0 13px rgba(255,174,192,.3);
+  color: #271234;
+  display: grid;
+  place-content: center;
+  gap: 1px;
+  font: inherit;
+  text-align: center;
+  font-size: clamp(11px, 3vh, 14px);
+  cursor: pointer;
+}
+.mobile-jump-button > span { font-size: 1.5em; line-height: 1.1; font-weight: 900; }
+.mobile-jump-button > strong { font-size: .85em; letter-spacing: .06em; }
+.mobile-jump-button.is-pressed { transform: scale(.94); filter: brightness(1.08); }
+
+/* Reduce expensive GPU layers and blurs on handheld hardware. */
+body.is-mobile .game-frame,
+body.is-mobile .hud,
+body.is-mobile .stat-card,
+body.is-mobile .overlay-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.is-mobile.is-landscape .game-frame::before {
+  box-shadow: inset 0 0 20px rgba(9, 6, 19, .13);
+}
+body.is-mobile.is-landscape .game-frame { box-shadow: 0 0 0 1px rgba(124, 131, 253, .1); }
+
+@media (max-height: 340px) and (orientation: landscape) {
+  body.is-mobile.is-landscape .mobile-game-controls:not(.is-app-hidden) {
+    bottom: max(5px, env(safe-area-inset-bottom));
+  }
+  .virtual-joystick, .mobile-jump-button {
+    width: clamp(74px, 26vh, 90px);
+    height: clamp(74px, 26vh, 90px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-jump-button { transition: none; }
+}
