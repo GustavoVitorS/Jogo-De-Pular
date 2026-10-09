@@ -1,4 +1,4 @@
-# Jogo de Pular — V3.9 Mobile Ascension & Menu Fix
+# Jumping game — V3.9 Mobile Ascension & Menu Fix
 
 A lightweight arcade game built with **HTML, CSS and Vanilla JavaScript**, now featuring two distinct game modes while preserving the visual identity, animated character, and movement style established in the V2.2 version.
 
