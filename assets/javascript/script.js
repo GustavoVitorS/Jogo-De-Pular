@@ -62,6 +62,7 @@
     jumpButton: document.querySelector("#jumpButton"),
     controlHint: document.querySelector("#controlHint"),
     touchStartHint: document.querySelector("#touchStartHint"),
+    startMobileButton: document.querySelector("#startMobileButton"),
     touchRetryHint: document.querySelector("#touchRetryHint"),
     orientationGate: document.querySelector("#orientationGate"),
     landscapeButton: document.querySelector("#landscapeButton"),
@@ -1706,7 +1707,7 @@
     ui.gameFooter.classList.add("is-app-hidden");
     document.body.classList.add("is-main-menu");
     document.body.classList.remove("is-ascension-mode");
-    ui.brandEyebrow.textContent = "Arcade • V3.8";
+    ui.brandEyebrow.textContent = "Arcade • V3.9";
     ui.tagline.textContent = "O mesmo ritmo da V2.2, agora com dois desafios.";
     resetInterfaceCache();
     updateInterface(true);
@@ -1734,7 +1735,9 @@
       ui.tagline.textContent = "Suba, desvie e alcance o próximo checkpoint.";
       ui.startKicker.textContent = "A ascensão começa agora";
       ui.startTitle.innerHTML = 'Até qual <span>fase</span><br />você consegue subir?';
-      ui.startCopy.textContent = "Use A/D para correr para os lados, W/S para ajustar a trajetória e Espaço para saltar. As plataformas alternam entre esquerda e direita: é preciso atravessar a arena para avançar.";
+      ui.startCopy.textContent = mobileLayout
+        ? "Use o joystick para chegar à plataforma do outro lado. Toque na seta ↑ para saltar e desvie dos blocos que caem."
+        : "Use A/D para correr para os lados, W/S para ajustar a trajetória e Espaço para saltar. As plataformas alternam entre esquerda e direita: é preciso atravessar a arena para avançar.";
       ui.finalMiddleLabel.textContent = "Checkpoints";
       ui.startBestLabel.textContent = "Melhor ascensão";
       ui.gameOverDetails.hidden = true;
@@ -1777,6 +1780,9 @@
     ui.checkpointOverlay.classList.remove("is-visible");
     resetInterfaceCache();
     updateInterface(true);
+    // Mode selection can change the HUD and controls without a viewport resize.
+    // Refresh the touch controller state immediately instead of waiting for a later event.
+    syncMobileControls();
     scheduleLayoutSync(20);
     forceNextFrame = true;
   }
@@ -2827,6 +2833,17 @@
     ui.jumpButton.addEventListener(eventName, endMobileJump);
   }
   ui.jumpButton.addEventListener("contextmenu", (event) => event.preventDefault());
+
+  // Accessible start inside the overlay: the initial screen is above the arena.
+  // On touch this also works before the virtual jump button can be reached.
+  ui.startMobileButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (!mobileLayout || isPortraitViewport() || !activeMode || gameState !== "menu") return;
+    audio.ensureContext();
+    startGame();
+    syncMobileControls();
+    forceNextFrame = true;
+  });
 
   ui.playClassicButton.addEventListener("click", () => {
     audio.ensureContext();

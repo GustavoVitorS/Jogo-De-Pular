@@ -8,18 +8,18 @@
     />
     <meta
       name="description"
-      content="Jogo de Pular V3.8 — HUD acessível, Esc para menu e joystick responsivo e salto por toque no celular, performance otimizada e Ascensão em zigue-zague."
+      content="Jogo de Pular V3.9 — HUD acessível, Esc para menu e joystick responsivo e salto por toque no celular, performance otimizada e Ascensão em zigue-zague."
     />
     <meta name="theme-color" content="#130d2b" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="format-detection" content="telephone=no" />
-    <title>Jogo de Pular V3.8 — Accessible HUD & Escape Menu</title>
+    <title>Jogo de Pular V3.9 — Mobile Ascension & Menu Fix</title>
     <link rel="manifest" href="assets/manifest.webmanifest" />
     <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
-    <link rel="stylesheet" href="assets/css/style.css?v=3.8" />
+    <link rel="stylesheet" href="assets/css/style.css?v=3.9" />
   </head>
   <body>
     <main class="page-shell">
@@ -27,7 +27,7 @@
         <div class="brand">
           <span class="brand-mark" aria-hidden="true"><span></span></span>
           <div>
-            <p id="brandEyebrow" class="eyebrow">Arcade • V3.8</p>
+            <p id="brandEyebrow" class="eyebrow">Arcade • V3.9</p>
             <h1>Jogo de <span>Pular</span></h1>
           </div>
         </div>
@@ -109,7 +109,7 @@
           width="1200"
           height="600"
           role="img"
-          aria-label="Jogo de corrida automática. Use Espaço no computador ou o botão Pular no celular."
+          aria-label="Jogo de Pular. Use Espaço no computador ou controles na tela do celular."
         ></canvas>
 
         <div id="hud" class="hud" aria-live="off">
@@ -183,6 +183,7 @@
               <span class="touch-prompt__dot"></span>
               <span id="touchStartHint">Toque na <strong>seta ↑</strong> para começar</span>
             </div>
+            <button id="startMobileButton" class="primary-button mobile-start-button" type="button">COMEÇAR A JOGAR</button>
             <p class="start-record">
               <span id="startBestLabel">Melhor corrida</span> <strong id="startBestValue">00000</strong>
             </p>
@@ -317,6 +318,6 @@
         Ative o JavaScript no navegador para jogar.
       </p>
     </noscript>
-    <script src="assets/javascript/script.js?v=3.8"></script>
+    <script src="assets/javascript/script.js?v=3.9"></script>
   </body>
 </html>

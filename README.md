@@ -1,12 +1,19 @@
-# Jogo de Pular — V3.8 Accessible HUD & Escape Menu
+# Jogo de Pular — V3.9 Mobile Ascension & Menu Fix
 
 A lightweight arcade game built with **HTML, CSS and Vanilla JavaScript**, now featuring two distinct game modes while preserving the visual identity, animated character, and movement style established in the V2.2 version.
 
-Version **V3.8** keeps the zigzag Ascension gameplay and V2.2 character while replacing the laggy full-screen touchpad with a **virtual joystick on the left and a dedicated jump button on the right**. The game remains static and compatible with GitHub Pages.
+Version **V3.9** fixes an Ascension mobile-start regression from V3.8, improves safe-area spacing in the landscape mode-selection menu, and retains the joystick, accessible HUD, and original V2.2 character design. The game remains static and compatible with GitHub Pages.
 
 ---
 
-## What Changed in V3.8
+## What Changed in V3.9
+
+- **Mobile Ascension start fix:** the start panel no longer blocks the on-screen jump arrow; a dedicated start button is also available inside the panel.
+- **Safer overlay stacking:** pause and Game Over stay above the gameplay controls, avoiding accidental actions.
+- **Mobile menu margins:** more breathing room around the headline and eyebrow text, including compact landscape devices and safe areas.
+- **Touch controls sync:** joystick and jump-button visibility updates immediately after mode selection.
+
+## Preserved From V3.8
 
 - **Escape shortcut (desktop):** press `Esc` while playing to pause and open the **Return to menu?** confirmation. The run is only ended after choosing **Return to modes**. Press `Esc` again or **Continue** to cancel and resume.
 - **Unified menu logic:** the HUD menu icon and Escape use the same confirmation logic, preventing accidental loss of a run.
@@ -690,3 +697,14 @@ Add a license before redistributing the project under explicit terms or acceptin
 - Makes horizontal input more immediate and changes direction in response to the player's stick position.
 - Prevents accidental fast-fall commands during side-to-side control.
 - Replaces the jump button caption with a large upward arrow.
+
+
+## V3.9 — Mobile Ascension and Menu Layout Fix
+
+- Fixed a mobile-specific layering regression introduced by the V3.8 HUD update: the start overlay could intercept the Ascension jump control.
+- Added an explicit **START GAME** action to the mobile start panel, while allowing the on-screen jump arrow to start the game as well.
+- Kept pause and game-over overlays above the on-screen controls to prevent accidental inputs.
+- Synchronized touch controls immediately when switching modes.
+- Increased safe-area-aware top and side padding in the landscape mode selection menu.
+- Added breathing room above the **TWO MODES • ONE IDENTITY** eyebrow label on narrow landscape displays.
+- Preserved the V3.8 HUD, the V2.2-inspired character visuals, the zigzag Ascension route, and desktop controls.

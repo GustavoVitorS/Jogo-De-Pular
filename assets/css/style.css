@@ -2491,3 +2491,83 @@ body.is-mobile.is-landscape .overlay-card--compact .secondary-button {
   body.is-mobile.is-landscape .overlay-card--compact .primary-button,
   body.is-mobile.is-landscape .overlay-card--compact .secondary-button { min-height: 42px; }
 }
+
+
+/* ================================================================
+   V3.9 — Mobile Ascension start and landscape menu spacing
+   ================================================================ */
+.mobile-start-button { display: none; }
+
+/* The V3.8 start overlay was stacked above the touch jump button.
+   Keep the pause/game-over dialogs above all controls, but allow the
+   jump button to remain tappable while the start overlay is displayed. */
+body.is-mobile.is-landscape #startOverlay { z-index: 25; }
+body.is-mobile.is-landscape #pauseOverlay,
+body.is-mobile.is-landscape #gameOverOverlay { z-index: 38; }
+
+body.is-mobile.is-landscape .mobile-start-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 43px;
+  min-width: min(240px, 100%);
+  padding: 10px 17px;
+  margin: 6px auto 4px;
+  font-weight: 850;
+  letter-spacing: .045em;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+body.is-mobile.is-landscape #startOverlay .overlay-card--start {
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+body.is-mobile.is-landscape #startOverlay .touch-prompt { margin-bottom: 1px; }
+
+/* Actual breathing room above the menu eyebrow on compact phones.
+   Safe-area insets are added where present, rather than replaced. */
+body.is-mobile.is-landscape.is-main-menu .page-shell {
+  padding-top: max(15px, env(safe-area-inset-top));
+  padding-left: max(14px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
+  padding-bottom: max(11px, env(safe-area-inset-bottom));
+}
+body.is-mobile.is-landscape.is-main-menu .mode-menu {
+  row-gap: clamp(8px, 2vh, 14px);
+}
+body.is-mobile.is-landscape.is-main-menu .mode-menu__intro {
+  padding: 0 8px 2px;
+  min-width: 0;
+}
+body.is-mobile.is-landscape.is-main-menu .mode-menu__intro .overlay-kicker {
+  margin: 0 0 clamp(5px, 1.8vh, 9px);
+  line-height: 1.25;
+  font-size: clamp(9px, 1.8vh, 12px);
+  letter-spacing: .09em;
+}
+body.is-mobile.is-landscape.is-main-menu .mode-menu__intro h2 {
+  margin-top: 0;
+  margin-bottom: clamp(4px, 1.2vh, 8px);
+  line-height: 1.06;
+}
+body.is-mobile.is-landscape.is-main-menu .mode-menu__intro > p:last-child {
+  line-height: 1.35;
+}
+@media (max-height: 350px) and (orientation: landscape) {
+  body.is-mobile.is-landscape.is-main-menu .mode-menu {
+    row-gap: 7px;
+  }
+  body.is-mobile.is-landscape.is-main-menu .mode-menu__intro .overlay-kicker {
+    margin-bottom: 4px;
+  }
+  body.is-mobile.is-landscape .mobile-start-button {
+    min-height: 40px;
+    padding: 7px 12px;
+    margin: 3px auto;
+  }
+  body.is-mobile.is-landscape #startOverlay .overlay-card--start {
+    padding: 8px 12px;
+  }
+}
