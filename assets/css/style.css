@@ -24,7 +24,7 @@ html {
 }
 
 body {
-  min-width: 320px;
+  min-width: 0;
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0;
@@ -2569,5 +2569,52 @@ body.is-mobile.is-landscape.is-main-menu .mode-menu__intro > p:last-child {
   }
   body.is-mobile.is-landscape #startOverlay .overlay-card--start {
     padding: 8px 12px;
+  }
+}
+
+
+/* ================================================================
+   V4.0 — Universal handheld orientation and responsive safety net
+   ================================================================ */
+/* A portrait Samsung/Android webview sometimes exposes desktop-like pointer
+   flags, and JS can temporarily be suspended while the address bar resizes.
+   Keep a CSS fallback for genuinely touch-oriented narrow devices. */
+@media (orientation: portrait) and (max-width: 1024px) and (pointer: coarse) {
+  body:not(.is-landscape) .page-shell {
+    display: none !important;
+  }
+  body:not(.is-landscape) .orientation-gate {
+    display: grid !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* On small landscape phones, keep the game fully within the actual viewport
+   including gesture bars, notches and fullscreen/browser toolbar changes. */
+body.is-mobile.is-landscape .page-shell {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+body.is-mobile.is-landscape .game-frame {
+  box-sizing: border-box;
+  max-height: min(calc(var(--game-vh) - 8px), calc(var(--game-vw) / 2));
+  min-width: 0;
+}
+
+/* Preserve readable orientation guidance on smaller portrait viewports. */
+@media (orientation: portrait) and (max-width: 540px) {
+  .orientation-gate {
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  }
+  .orientation-card {
+    width: min(100%, 440px);
+    max-height: calc(100dvh - 28px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }

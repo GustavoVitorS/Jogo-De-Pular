@@ -600,28 +600,46 @@
     return viewport;
   }
 
+  // Detect handheld browsers even when Samsung Internet, an embedded browser or
+  // Android's desktop-site setting reports mouse-like pointer capabilities.
+  // Pointer/touch remain preferred signals; UA is a fallback, not the only test.
   function isTouchMobileLayout() {
     const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
     const noHover = window.matchMedia("(hover: none)").matches;
-    const hasTouch = (navigator.maxTouchPoints || 0) > 0 || "ontouchstart" in window;
-    const viewport = getVisualViewportSize();
-    const screenWidth = window.screen?.width || viewport.width;
-    const screenHeight = window.screen?.height || viewport.height;
-    const shortestScreenSide = Math.min(screenWidth, screenHeight);
-    const shortestViewportSide = Math.min(viewport.width, viewport.height);
+    const maxTouchPoints = navigator.maxTouchPoints || 0;
+    const hasTouch = maxTouchPoints > 0 || "ontouchstart" in window;
+    const ua = navigator.userAgent || "";
+    const uaDataMobile = navigator.userAgentData?.mobile === true;
+    const phoneUA = /iPhone|iPod|Android.*Mobile|Windows Phone|IEMobile|Opera Mini|BlackBerry|webOS|SamsungBrowser/i.test(ua);
+    const tabletUA = /iPad|Android|Tablet|Silk/i.test(ua);
+    const ipadDesktopUA = /Macintosh/i.test(ua) && maxTouchPoints > 1;
+    const screenShort = Math.min(window.screen?.width || innerWidth, window.screen?.height || innerHeight);
+    const screenLong = Math.max(window.screen?.width || innerWidth, window.screen?.height || innerHeight);
+    const visual = getVisualViewportSize();
+    const viewportShort = Math.min(innerWidth, innerHeight, visual.width, visual.height);
+    const compactDevice = Math.min(screenShort, viewportShort) <= 1100;
 
-    // A touchscreen laptop normally keeps a fine pointer and hover support.
-    // Phones/tablets normally expose coarse pointer + no hover, so they enter
-    // the dedicated mobile experience without relying on user-agent strings.
-    const handheldPointer = coarsePointer && noHover;
-    const compactTouchFallback = hasTouch && noHover && shortestViewportSide <= 900;
-
-    return hasTouch && (handheldPointer || compactTouchFallback) && shortestScreenSide <= 1100;
+    // A true phone should never lose the orientation gate solely because a
+    // browser has disabled touch/pointer reporting. Larger desktop windows,
+    // including touch-screen laptops, still use the desktop layout.
+    if (uaDataMobile || phoneUA) return compactDevice;
+    // Last resort for phones requesting a desktop user agent while also hiding
+    // touch capabilities: use physical-screen proportions together with a
+    // high-DPI handheld display, rather than treating any narrow window as a phone.
+    const phoneDisplayFallback = screenShort <= 600 && screenLong >= 680 &&
+      (window.devicePixelRatio || 1) >= 2 && compactDevice;
+    if (phoneDisplayFallback) return true;
+    if ((tabletUA || ipadDesktopUA) && compactDevice && (hasTouch || coarsePointer || noHover)) return true;
+    return compactDevice && (coarsePointer && (noHover || hasTouch) || hasTouch && noHover);
   }
 
   function isPortraitViewport() {
-    const viewport = getVisualViewportSize();
-    return viewport.height > viewport.width;
+    // Layout viewport/matchMedia are less affected by the visual viewport
+    // changing during fullscreen transitions or browser chrome animations.
+    const layoutWidth = Math.max(1, window.innerWidth || document.documentElement.clientWidth);
+    const layoutHeight = Math.max(1, window.innerHeight || document.documentElement.clientHeight);
+    const mediaPortrait = window.matchMedia("(orientation: portrait)").matches;
+    return mediaPortrait || layoutHeight > layoutWidth;
   }
 
   function resetOrientationCopy() {
@@ -660,7 +678,7 @@
   function updateMobileExperience() {
     const viewport = syncVisualViewport();
     mobileLayout = isTouchMobileLayout();
-    const portrait = mobileLayout && viewport.height > viewport.width;
+    const portrait = mobileLayout && isPortraitViewport();
 
     document.body.classList.toggle("is-mobile", mobileLayout);
     document.body.classList.toggle("is-portrait", portrait);

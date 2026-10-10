@@ -1,8 +1,21 @@
-# Jumping game — V3.9 Mobile Ascension & Menu Fix
+# Jogo de Pular — V4.0 Universal Mobile Compatibility
 
 A lightweight arcade game built with **HTML, CSS and Vanilla JavaScript**, now featuring two distinct game modes while preserving the visual identity, animated character, and movement style established in the V2.2 version.
 
-Version **V3.9** fixes an Ascension mobile-start regression from V3.8, improves safe-area spacing in the landscape mode-selection menu, and retains the joystick, accessible HUD, and original V2.2 character design. The game remains static and compatible with GitHub Pages.
+Version **V4.0** fixes mobile-browser detection and orientation handling, including Samsung Galaxy A54-style portrait layouts. It retains V3.9 game mechanics, the responsive joystick, readable HUD and V2.2 character design. The game remains static and compatible with GitHub Pages.
+
+---
+
+## What Changed in V4.0
+
+- **Samsung Galaxy A54 / mobile browser fix:** handheld detection no longer requires reliable `maxTouchPoints`, `pointer: coarse`, or `hover: none` values at the same time; Android/Samsung Browser and iPhone browser hints provide a fallback.
+- **Portrait orientation gate:** phones held vertically display the existing animated **Jogue na horizontal** screen instead of shrinking the desktop game into portrait.
+- **Landscape unlock:** when physically rotated, the game automatically reveals the mode selection or resumes the paused game; the fullscreen/landscape lock is still attempted after user interaction where supported.
+- **Layout sizing:** fixed-size world rendering scales to the mobile viewport and respects safe areas and dynamic browser chrome.
+- **No gameplay redesign:** Classic Mode physics, Ascension zigzag platforms, joystick, HUD and character animations remain unchanged.
+- **Regression test coverage:** portrait/landscape desktop, Android phone (including altered touch reporting) and compact landscape layouts.
+
+**Browser limitation:** regular websites cannot guarantee forced device rotation on page load. When orientation locking is blocked, turn the device sideways as guided by the animated screen.
 
 ---
 

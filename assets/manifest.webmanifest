@@ -1,7 +1,7 @@
 {
-  "name": "Jogo de Pular — Mobile Touchpad",
+  "name": "Jogo de Pular — Mobile Arcade",
   "short_name": "Jogo de Pular",
-  "description": "Jogo arcade neon com Modo Clássico, Modo Ascensão em zigue-zague e controles mobile por gestos na própria tela.",
+  "description": "Jogo arcade neon com Modo Clássico, Modo Ascensão em zigue-zague e joystick virtual e suporte a celulares em landscape.",
   "start_url": "../",
   "scope": "../",
   "display": "fullscreen",
